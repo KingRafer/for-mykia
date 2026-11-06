@@ -1,11 +1,9 @@
-// ===== Cloudinary =====
-const CLOUD_NAME = "djpavitu";
-const UPLOAD_PRESET = "for-mykia";
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/" + CLOUD_NAME + "/image/upload";
-
-// Daftar foto bersama di repo
+// ===== Storage: folder assets/ di repo GitHub =====
 const DATA_URL = "photos/data.json";
-const LOCAL_KEY = "saskia_gallery_local_v3";
+const ASSETS_PREFIX = "assets/";
+const LOCAL_KEY = "saskia_gallery_local_v4";
+const MAX_WIDTH = 1280;
+const JPEG_QUALITY = 0.82;
 
 // ===== Theme =====
 const themeToggle = document.getElementById("theme-toggle");
@@ -84,6 +82,14 @@ const fileDropText = document.getElementById("file-drop-text");
 let repoPhotos = [];
 let localPhotos = [];
 
+const GH_OWNER = "KingRafer";
+const GH_REPO = "for-mykia";
+const GH_BRANCH = "main";
+
+function getToken() {
+  return localStorage.getItem("GH_TOKEN") || "";
+}
+
 function escapeHtml(str) {
   if (!str) return "";
   return String(str)
@@ -94,12 +100,12 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
-function optimizedUrl(url, width) {
-  width = width || 900;
-  if (!url || url.indexOf("res.cloudinary.com") === -1) return url;
-  if (url.indexOf("/upload/") === -1) return url;
-  if (/\/upload\/[^/]+,[^/]+\//.test(url)) return url;
-  return url.replace("/upload/", "/upload/c_limit,w_" + width + ",f_auto,q_auto/");
+function resolveSrc(src) {
+  if (!src) return "";
+  if (src.indexOf("http") === 0 || src.indexOf("data:") === 0 || src.indexOf("blob:") === 0) {
+    return src;
+  }
+  return src.replace(/^\//, "");
 }
 
 function loadLocal() {
@@ -117,7 +123,9 @@ function saveLocal(arr) {
   localPhotos = arr;
   try {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(arr));
-  } catch (e) {}
+  } catch (e) {
+    alert("Penyimpanan lokal penuh. Set token GitHub agar foto masuk folder assets/ di repo.");
+  }
 }
 
 function allPhotos() {
@@ -165,8 +173,7 @@ function renderGallery() {
     const hasDate = photo.date && String(photo.date).trim() !== "";
     const safeDesc = escapeHtml(photo.desc);
     const safeAlt = hasDesc ? safeDesc : "Kenangan";
-    const thumb = optimizedUrl(photo.src, 700);
-    const full = optimizedUrl(photo.src, 1600);
+    const src = resolveSrc(photo.src);
     var overlay = "";
     if (hasDesc || hasDate) {
       overlay = '<div class="gallery-overlay">';
@@ -178,14 +185,13 @@ function renderGallery() {
           "</span>";
       overlay += "</div>";
     }
-    const del =
-      !photo.fromRepo
-        ? '<button type="button" class="btn-delete-photo" title="Hapus" aria-label="Hapus">\u2715</button>'
-        : "";
+    const del = !photo.fromRepo
+      ? '<button type="button" class="btn-delete-photo" title="Hapus" aria-label="Hapus">\u2715</button>'
+      : "";
     card.innerHTML =
       '<div class="gallery-media">' +
       '<img src="' +
-      escapeHtml(thumb) +
+      escapeHtml(src) +
       '" alt="' +
       safeAlt +
       '" loading="lazy" decoding="async" />' +
@@ -207,7 +213,7 @@ function renderGallery() {
     }
     card.addEventListener("click", function () {
       openLightbox({
-        src: full || photo.src,
+        src: src,
         desc: photo.desc,
         date: photo.date,
       });
@@ -233,8 +239,128 @@ async function loadRepoPhotos() {
       });
     }
   } catch (e) {
-    console.warn("data.json belum ada / gagal dimuat", e);
+    console.warn("data.json", e);
   }
+}
+
+function compressToBase64(file) {
+  return new Promise(function (resolve, reject) {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = function () {
+      URL.revokeObjectURL(url);
+      var w = img.width;
+      var h = img.height;
+      if (w > MAX_WIDTH) {
+        h = Math.round((h * MAX_WIDTH) / w);
+        w = MAX_WIDTH;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+      const b64 = dataUrl.split(",")[1];
+      resolve({ base64: b64, dataUrl: dataUrl });
+    };
+    img.onerror = function () {
+      URL.revokeObjectURL(url);
+      reject(new Error("Gagal memproses gambar"));
+    };
+    img.src = url;
+  });
+}
+
+async function ghFetch(path, options) {
+  options = options || {};
+  const headers = Object.assign(
+    {
+      Accept: "application/vnd.github+json",
+      Authorization: "Bearer " + getToken(),
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+    options.headers || {}
+  );
+  return fetch("https://api.github.com" + path, Object.assign({}, options, { headers: headers }));
+}
+
+async function uploadAssetToRepo(filename, base64Content, message) {
+  const path = ASSETS_PREFIX + filename;
+  const res = await ghFetch(
+    "/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + path,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: message || "Tambah foto: " + filename,
+        content: base64Content,
+        branch: GH_BRANCH,
+      }),
+    }
+  );
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error("Upload assets gagal: " + t.slice(0, 150));
+  }
+  return path;
+}
+
+async function updateDataJson(photo) {
+  const path = "photos/data.json";
+  const getRes = await ghFetch(
+    "/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + path + "?ref=" + GH_BRANCH
+  );
+  let current = [];
+  let sha = null;
+  if (getRes.ok) {
+    const meta = await getRes.json();
+    sha = meta.sha;
+    try {
+      current = JSON.parse(atob(meta.content.replace(/\n/g, "")));
+      if (!Array.isArray(current)) current = [];
+    } catch (e) {
+      current = [];
+    }
+  } else if (getRes.status !== 404) {
+    throw new Error("Gagal baca data.json");
+  }
+
+  const entry = {
+    id: photo.id,
+    src: photo.src,
+    desc: photo.desc || "",
+    date: photo.date || "",
+  };
+  const next = [entry]
+    .concat(
+      current.filter(function (p) {
+        return p.id !== entry.id && p.src !== entry.src;
+      })
+    )
+    .slice(0, 200);
+
+  const body = {
+    message: "Galeri: update data.json",
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(next, null, 2) + "\n"))),
+    branch: GH_BRANCH,
+  };
+  if (sha) body.sha = sha;
+
+  const putRes = await ghFetch(
+    "/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + path,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }
+  );
+  if (!putRes.ok) {
+    const t = await putRes.text();
+    throw new Error("Update data.json gagal: " + t.slice(0, 150));
+  }
+  repoPhotos = next;
+  return next;
 }
 
 // ===== Modal =====
@@ -246,7 +372,12 @@ function openAddModal() {
   addModal.classList.remove("hidden");
   addModal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
-  uploadStatus.textContent = "Foto diupload ke cloud, lalu masuk galeri.";
+  if (getToken()) {
+    uploadStatus.textContent = "Foto akan disimpan ke folder assets/ di GitHub.";
+  } else {
+    uploadStatus.textContent =
+      "Belum ada token. Foto hanya di perangkat ini. Set token agar masuk repo.";
+  }
 }
 function closeAddModal() {
   addModal.classList.add("hidden");
@@ -259,7 +390,6 @@ function closeAddModal() {
   previewImg.classList.add("hidden");
   previewPlaceholder.classList.remove("hidden");
   fileDropText.textContent = "Klik atau pilih foto";
-  uploadStatus.textContent = "Foto diupload ke cloud, lalu masuk galeri.";
   addPhotoLabel.textContent = "Simpan ke Galeri";
   addPhotoBtn.disabled = false;
 }
@@ -287,93 +417,6 @@ photoInput.addEventListener("change", function () {
   reader.readAsDataURL(file);
 });
 
-async function uploadToCloudinary(file) {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", UPLOAD_PRESET);
-  formData.append("folder", "for-kia");
-  const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
-  if (!res.ok) {
-    const err = await res.json().catch(function () {
-      return {};
-    });
-    throw new Error((err.error && err.error.message) || "Upload gagal");
-  }
-  return res.json();
-}
-
-async function publishToRepo(photo) {
-  const token = localStorage.getItem("GH_TOKEN");
-  if (!token) return { published: false, reason: "no-token" };
-
-  const owner = "KingRafer";
-  const repo = "for-mykia";
-  const path = "photos/data.json";
-
-  const getRes = await fetch(
-    "https://api.github.com/repos/" + owner + "/" + repo + "/contents/" + path,
-    {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: "Bearer " + token,
-      },
-    }
-  );
-
-  let current = [];
-  let sha = null;
-  if (getRes.ok) {
-    const meta = await getRes.json();
-    sha = meta.sha;
-    try {
-      current = JSON.parse(atob(meta.content.replace(/\n/g, "")));
-      if (!Array.isArray(current)) current = [];
-    } catch (e) {
-      current = [];
-    }
-  } else if (getRes.status !== 404) {
-    throw new Error("Gagal baca data.json");
-  }
-
-  const entry = {
-    id: photo.id,
-    src: photo.src,
-    desc: photo.desc || "",
-    date: photo.date || "",
-  };
-  const next = [entry].concat(
-    current.filter(function (p) {
-      return p.id !== entry.id && p.src !== entry.src;
-    })
-  ).slice(0, 200);
-
-  const body = {
-    message: "Galeri: tambah foto",
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(next, null, 2) + "\n"))),
-    branch: "main",
-  };
-  if (sha) body.sha = sha;
-
-  const putRes = await fetch(
-    "https://api.github.com/repos/" + owner + "/" + repo + "/contents/" + path,
-    {
-      method: "PUT",
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    }
-  );
-  if (!putRes.ok) {
-    const t = await putRes.text();
-    throw new Error("Gagal simpan ke repo: " + t.slice(0, 120));
-  }
-  repoPhotos = next;
-  return { published: true };
-}
-
 async function addPhoto() {
   const file = photoInput.files[0];
   if (!file) {
@@ -384,48 +427,56 @@ async function addPhoto() {
     alert("File harus berupa gambar!");
     return;
   }
-  if (file.size > 12 * 1024 * 1024) {
-    alert("Ukuran foto terlalu besar (maks ~12MB).");
+  if (file.size > 15 * 1024 * 1024) {
+    alert("Ukuran foto terlalu besar (maks ~15MB).");
     return;
   }
 
   addPhotoBtn.disabled = true;
-  addPhotoLabel.textContent = "Mengupload...";
-  uploadStatus.textContent = "Upload ke Cloudinary...";
+  addPhotoLabel.textContent = "Memproses...";
+  uploadStatus.textContent = "Kompres foto...";
 
   try {
-    const result = await uploadToCloudinary(file);
-    const photo = {
-      id: result.public_id || "cloud-" + Date.now(),
-      src: result.secure_url,
-      desc: photoDesc.value.trim(),
-      date: photoDate.value || "",
-    };
+    const compressed = await compressToBase64(file);
+    const id = "img-" + Date.now();
+    const filename = id + ".jpg";
+    const token = getToken();
 
-    saveLocal([photo].concat(localPhotos));
-    renderGallery();
-
-    uploadStatus.textContent = "Menyimpan ke repo...";
-    try {
-      const pub = await publishToRepo(photo);
-      if (pub.published) {
-        saveLocal(
-          localPhotos.filter(function (p) {
-            return (p.id || p.src) !== (photo.id || photo.src);
-          })
-        );
-        uploadStatus.textContent = "Tersimpan di repo \u2713";
-      } else {
-        uploadStatus.textContent =
-          "Tersimpan di perangkat ini. (Opsional: set token agar masuk repo)";
-      }
-    } catch (pubErr) {
-      console.warn(pubErr);
+    if (token) {
+      uploadStatus.textContent = "Upload ke assets/ di GitHub...";
+      const assetPath = await uploadAssetToRepo(
+        filename,
+        compressed.base64,
+        "Foto: " + filename
+      );
+      const photo = {
+        id: id,
+        src: assetPath,
+        desc: photoDesc.value.trim(),
+        date: photoDate.value || "",
+      };
+      uploadStatus.textContent = "Update data.json...";
+      await updateDataJson(photo);
+      uploadStatus.textContent = "Tersimpan di assets/ \u2713";
+      saveLocal(
+        localPhotos.filter(function (p) {
+          return p.id !== id;
+        })
+      );
+      renderGallery();
+    } else {
+      const photo = {
+        id: id,
+        src: compressed.dataUrl,
+        desc: photoDesc.value.trim(),
+        date: photoDate.value || "",
+      };
+      saveLocal([photo].concat(localPhotos));
+      renderGallery();
       uploadStatus.textContent =
-        "Cloud OK. Repo: " + (pubErr.message || "skip");
+        "Tersimpan di perangkat ini. Untuk GitHub: setGithubToken(\"ghp_...\") di Console.";
     }
 
-    renderGallery();
     closeAddModal();
     document.getElementById("gallery").scrollIntoView({
       behavior: "smooth",
@@ -494,7 +545,7 @@ window.setGithubToken = function (token) {
     return;
   }
   localStorage.setItem("GH_TOKEN", token.trim());
-  alert("Token tersimpan. Upload berikutnya masuk ke photos/data.json di repo.");
+  alert("OK! Upload berikutnya masuk ke folder assets/ di GitHub.");
 };
 
 (async function init() {
