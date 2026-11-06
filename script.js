@@ -13,7 +13,7 @@ themeToggle.addEventListener("click", () => {
   localStorage.setItem("theme", isDark ? "light" : "dark");
 });
 
-// ===== Music Player — I Wanna Be Yours =====
+// ===== Music =====
 const musicToggle = document.getElementById("music-toggle");
 const musicIcon = document.getElementById("music-icon");
 const bgMusic = document.getElementById("bg-music");
@@ -33,31 +33,21 @@ musicToggle.addEventListener("click", async () => {
       isPlaying = true;
     }
   } catch (err) {
-    console.log("Audio play blocked or failed:", err);
-    alert("Klik sekali lagi untuk memutar musik ya 💕\n(Browser kadang butuh interaksi dulu)");
+    alert("Klik sekali lagi untuk memutar musik ya 💕");
   }
 });
 
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden && isPlaying) {
-    bgMusic.pause();
-  } else if (!document.hidden && isPlaying) {
-    bgMusic.play().catch(() => {});
-  }
+  if (document.hidden && isPlaying) bgMusic.pause();
+  else if (!document.hidden && isPlaying) bgMusic.play().catch(() => {});
 });
 
-// ===== Countdown (live) =====
+// ===== Countdown =====
 const anniversaryDate = new Date("2026-10-17T00:00:00+07:00").getTime();
 
 function updateCountdown() {
   const now = Date.now();
   const distance = now - anniversaryDate;
-
-  const daysEl = document.getElementById("days");
-  const hoursEl = document.getElementById("hours");
-  const minutesEl = document.getElementById("minutes");
-  const secondsEl = document.getElementById("seconds");
-  const statusEl = document.getElementById("anniversary-status");
 
   const totalSeconds = Math.floor(Math.abs(distance) / 1000);
   const days = Math.floor(totalSeconds / (60 * 60 * 24));
@@ -65,42 +55,22 @@ function updateCountdown() {
   const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
   const seconds = totalSeconds % 60;
 
-  daysEl.textContent = String(days).padStart(2, "0");
-  hoursEl.textContent = String(hours).padStart(2, "0");
-  minutesEl.textContent = String(minutes).padStart(2, "0");
-  secondsEl.textContent = String(seconds).padStart(2, "0");
+  document.getElementById("days").textContent = String(days).padStart(2, "0");
+  document.getElementById("hours").textContent = String(hours).padStart(2, "0");
+  document.getElementById("minutes").textContent = String(minutes).padStart(2, "0");
+  document.getElementById("seconds").textContent = String(seconds).padStart(2, "0");
 
-  if (distance < 0) {
-    statusEl.textContent = "Menuju 17 Oktober 2026 💕";
-  } else if (days === 0 && hours < 24) {
-    statusEl.textContent = "Hari ini hari jadian kita! 🎉💕";
-  } else {
-    statusEl.textContent = `Sudah ${days} hari bersama Saskia 💕`;
-  }
+  const statusEl = document.getElementById("anniversary-status");
+  if (distance < 0) statusEl.textContent = "Menuju 17 Oktober 2026 💕";
+  else if (days === 0 && hours < 24) statusEl.textContent = "Hari ini hari jadian kita! 🎉💕";
+  else statusEl.textContent = `Sudah ${days} hari bersama Saskia 💕`;
 }
 
 updateCountdown();
 setInterval(updateCountdown, 1000);
 
-// ===== Photo Gallery =====
-const STORAGE_KEY = "saskia_gallery_photos";
+// ===== Gallery dari folder repo: photos/data.json =====
 const galleryGrid = document.getElementById("gallery-grid");
-const photoInput = document.getElementById("photo-input");
-const photoDesc = document.getElementById("photo-desc");
-const photoDate = document.getElementById("photo-date");
-const addPhotoBtn = document.getElementById("add-photo-btn");
-
-function loadPhotos() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch (e) {}
-  return [];
-}
-
-function savePhotos(photos) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
-}
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -112,12 +82,12 @@ function formatDate(dateStr) {
   });
 }
 
-function renderGallery() {
-  const photos = loadPhotos();
+function renderGallery(photos) {
   galleryGrid.innerHTML = "";
 
-  if (photos.length === 0) {
-    galleryGrid.innerHTML = `<div class="gallery-empty">Belum ada foto. Yuk tambahkan kenangan pertama! 📷💕</div>`;
+  if (!photos || photos.length === 0) {
+    galleryGrid.innerHTML =
+      `<div class="gallery-empty">Belum ada foto. Klik "Cara Tambah Foto" untuk menambah kenangan 📷💕</div>`;
     return;
   }
 
@@ -129,7 +99,6 @@ function renderGallery() {
     const hasDate = photo.date && photo.date.trim() !== "";
     const hasOverlay = hasDesc || hasDate;
 
-    // Teks langsung ditimpa di atas foto
     card.innerHTML = `
       <div class="gallery-media">
         <img src="${photo.src}" alt="${hasDesc ? photo.desc : "Kenangan"}" loading="lazy" />
@@ -146,12 +115,24 @@ function renderGallery() {
   });
 }
 
-// ===== Modal Add Photo =====
+async function loadGallery() {
+  try {
+    // cache-bust supaya update data.json cepat kelihatan
+    const res = await fetch("photos/data.json?t=" + Date.now());
+    if (!res.ok) throw new Error("Gagal load data.json");
+    const photos = await res.json();
+    renderGallery(photos);
+  } catch (err) {
+    console.error(err);
+    galleryGrid.innerHTML =
+      `<div class="gallery-empty">Gagal memuat galeri. Cek file photos/data.json</div>`;
+  }
+}
+
+// ===== Modal howto =====
 const addModal = document.getElementById("add-modal");
 const openAddModalBtn = document.getElementById("open-add-modal");
 const closeAddModalBtn = document.getElementById("close-add-modal");
-const previewImg = document.getElementById("preview-img");
-const previewPlaceholder = document.getElementById("preview-placeholder");
 
 function openAddModal() {
   addModal.classList.remove("hidden");
@@ -163,17 +144,10 @@ function closeAddModal() {
   addModal.classList.add("hidden");
   addModal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
-  photoInput.value = "";
-  photoDesc.value = "";
-  photoDate.value = "";
-  previewImg.src = "";
-  previewImg.classList.add("hidden");
-  previewPlaceholder.classList.remove("hidden");
 }
 
 openAddModalBtn.addEventListener("click", openAddModal);
 closeAddModalBtn.addEventListener("click", closeAddModal);
-
 addModal.addEventListener("click", (e) => {
   if (e.target === addModal) closeAddModal();
 });
@@ -184,53 +158,6 @@ document.addEventListener("keydown", (e) => {
     closeLightbox();
   }
 });
-
-photoInput.addEventListener("change", () => {
-  const file = photoInput.files[0];
-  if (!file || !file.type.startsWith("image/")) return;
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    previewImg.src = e.target.result;
-    previewImg.classList.remove("hidden");
-    previewPlaceholder.classList.add("hidden");
-  };
-  reader.readAsDataURL(file);
-});
-
-function addPhoto() {
-  const file = photoInput.files[0];
-  if (!file) {
-    alert("Pilih foto dulu ya 💕");
-    return;
-  }
-
-  if (!file.type.startsWith("image/")) {
-    alert("File harus berupa gambar!");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const photos = loadPhotos();
-    const descValue = photoDesc.value.trim();
-
-    photos.unshift({
-      id: "local-" + Date.now(),
-      src: e.target.result,
-      desc: descValue,
-      date: photoDate.value || "",
-    });
-    savePhotos(photos);
-    renderGallery();
-    closeAddModal();
-
-    document.getElementById("gallery").scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-  reader.readAsDataURL(file);
-}
-
-addPhotoBtn.addEventListener("click", addPhoto);
 
 // ===== Lightbox + Download =====
 const lightbox = document.getElementById("lightbox");
@@ -264,19 +191,33 @@ lightbox.addEventListener("click", (e) => {
   if (e.target === lightbox) closeLightbox();
 });
 
-downloadBtn.addEventListener("click", (e) => {
+downloadBtn.addEventListener("click", async (e) => {
   e.stopPropagation();
   if (!currentLightboxPhoto) return;
 
-  const link = document.createElement("a");
-  link.href = currentLightboxPhoto.src;
-  const name = currentLightboxPhoto.desc
-    ? currentLightboxPhoto.desc.replace(/[^a-z0-9]/gi, "_").slice(0, 40)
-    : "kenangan";
-  link.download = `${name || "foto"}_${Date.now()}.jpg`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  try {
+    const res = await fetch(currentLightboxPhoto.src);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const name = currentLightboxPhoto.desc
+      ? currentLightboxPhoto.desc.replace(/[^a-z0-9]/gi, "_").slice(0, 40)
+      : "kenangan";
+    const ext = (currentLightboxPhoto.src.split(".").pop() || "jpg").split("?")[0];
+    link.download = `${name || "foto"}.${ext}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    // fallback
+    const link = document.createElement("a");
+    link.href = currentLightboxPhoto.src;
+    link.download = "foto.jpg";
+    link.target = "_blank";
+    link.click();
+  }
 });
 
-renderGallery();
+loadGallery();
