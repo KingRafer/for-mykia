@@ -117,14 +117,11 @@
       <div class="section-header">
         <span class="section-logo">📷</span>
         <h2 class="section-title">Galeri Kenangan</h2>
-        <p class="section-desc">Kumpulan momen indah kita <span id="sync-status" class="sync-status" title="Status sinkronisasi">●</span></p>
+        <p class="section-desc">Kumpulan momen indah kita</p>
       </div>
 
       <div class="gallery-actions">
-        <button type="button" id="open-add-modal" class="btn-add-memory">
-          <span class="btn-icon">✨</span>
-          <span>Tambah Kenangan</span>
-        </button>
+        <p class="gallery-howto">Cara tambah foto: upload ke folder <strong>assets/</strong> di GitHub, lalu daftar di <strong>photos/data.json</strong></p>
       </div>
 
       <div class="gallery-grid" id="gallery-grid"></div>
@@ -140,53 +137,6 @@
       <p class="footer-song">♪ Now playing: <em>I Wanna Be Yours</em> — Arctic Monkeys</p>
     </div>
   </footer>
-
-  <div id="add-modal" class="modal-overlay hidden" aria-hidden="true">
-    <div class="modal-card">
-      <button type="button" class="modal-close" id="close-add-modal" aria-label="Tutup">✕</button>
-
-      <div class="modal-header">
-        <span class="modal-logo">🌸</span>
-        <h2>Tambah Kenangan</h2>
-        <p>Upload ke cloud — tampil di semua perangkat</p>
-      </div>
-
-      <div class="modal-body">
-        <div class="photo-preview-wrap" id="preview-wrap">
-          <div class="photo-preview-placeholder" id="preview-placeholder">
-            <span class="preview-icon">📷</span>
-            <span>Pilih foto untuk preview</span>
-          </div>
-          <img id="preview-img" class="photo-preview-img hidden" alt="Preview" />
-        </div>
-
-        <div class="form-group">
-          <label for="photo-input">Foto</label>
-          <label class="file-drop" for="photo-input">
-            <span class="file-drop-text" id="file-drop-text">Klik atau pilih foto</span>
-            <input type="file" id="photo-input" accept="image/*" hidden />
-          </label>
-        </div>
-
-        <div class="form-group">
-          <label for="photo-desc">Deskripsi <span class="optional">(opsional)</span></label>
-          <input type="text" id="photo-desc" placeholder="Boleh dikosongkan..." maxlength="120" />
-        </div>
-
-        <div class="form-group">
-          <label for="photo-date">Tanggal <span class="optional">(opsional)</span></label>
-          <input type="date" id="photo-date" />
-        </div>
-
-        <button type="button" id="add-photo-btn" class="btn-submit">
-          <span id="add-photo-label">Simpan ke Galeri</span>
-          <span class="btn-heart">💕</span>
-        </button>
-
-        <p class="modal-hint" id="upload-status">Foto muncul di semua perangkat secara live.</p>
-      </div>
-    </div>
-  </div>
 
   <div id="lightbox" class="lightbox hidden">
     <button class="lightbox-close" id="lightbox-close">✕</button>
