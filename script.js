@@ -90,27 +90,12 @@ const photoDesc = document.getElementById("photo-desc");
 const photoDate = document.getElementById("photo-date");
 const addPhotoBtn = document.getElementById("add-photo-btn");
 
-const defaultPhotos = [
-  {
-    id: "sample-1",
-    src: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&h=400&fit=crop",
-    desc: "Awal kisah kita",
-    date: "2026-10-17",
-  },
-  {
-    id: "sample-2",
-    src: "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=400&h=400&fit=crop",
-    desc: "Senyummu favoritku",
-    date: "2026-10-20",
-  },
-];
-
 function loadPhotos() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) return JSON.parse(saved);
   } catch (e) {}
-  return [...defaultPhotos];
+  return [];
 }
 
 function savePhotos(photos) {
@@ -139,13 +124,21 @@ function renderGallery() {
   photos.forEach((photo) => {
     const card = document.createElement("div");
     card.className = "gallery-card";
+
+    const hasDesc = photo.desc && photo.desc.trim() !== "";
+    const hasDate = photo.date && photo.date.trim() !== "";
+
     card.innerHTML = `
-      <img src="${photo.src}" alt="${photo.desc || "Kenangan"}" loading="lazy" />
-      <div class="gallery-card-info">
-        <p class="gallery-card-desc">${photo.desc || "Tanpa deskripsi"}</p>
-        <span class="gallery-card-date">${formatDate(photo.date) || ""}</span>
+      <div class="gallery-img-wrap">
+        <img src="${photo.src}" alt="${hasDesc ? photo.desc : "Kenangan"}" loading="lazy" />
       </div>
+      ${hasDesc || hasDate ? `
+      <div class="gallery-card-info">
+        ${hasDesc ? `<p class="gallery-card-desc">${photo.desc}</p>` : ""}
+        ${hasDate ? `<span class="gallery-card-date">${formatDate(photo.date)}</span>` : ""}
+      </div>` : ""}
     `;
+
     card.addEventListener("click", () => openLightbox(photo));
     galleryGrid.appendChild(card);
   });
@@ -168,7 +161,6 @@ function closeAddModal() {
   addModal.classList.add("hidden");
   addModal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
-  // reset form
   photoInput.value = "";
   photoDesc.value = "";
   photoDate.value = "";
@@ -220,17 +212,18 @@ function addPhoto() {
   const reader = new FileReader();
   reader.onload = (e) => {
     const photos = loadPhotos();
+    const descValue = photoDesc.value.trim(); // boleh kosong
+
     photos.unshift({
       id: "local-" + Date.now(),
       src: e.target.result,
-      desc: photoDesc.value.trim() || "Kenangan indah",
-      date: photoDate.value || new Date().toISOString().slice(0, 10),
+      desc: descValue, // kosong jika tidak diisi
+      date: photoDate.value || "",
     });
     savePhotos(photos);
     renderGallery();
     closeAddModal();
 
-    // soft scroll to gallery
     document.getElementById("gallery").scrollIntoView({ behavior: "smooth", block: "start" });
   };
   reader.readAsDataURL(file);
@@ -238,17 +231,23 @@ function addPhoto() {
 
 addPhotoBtn.addEventListener("click", addPhoto);
 
-// ===== Lightbox =====
+// ===== Lightbox + Download =====
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
 const lightboxDesc = document.getElementById("lightbox-desc");
 const lightboxDate = document.getElementById("lightbox-date");
 const lightboxClose = document.getElementById("lightbox-close");
+const downloadBtn = document.getElementById("download-btn");
+
+let currentLightboxPhoto = null;
 
 function openLightbox(photo) {
+  currentLightboxPhoto = photo;
   lightboxImg.src = photo.src;
   lightboxDesc.textContent = photo.desc || "";
+  lightboxDesc.style.display = photo.desc ? "block" : "none";
   lightboxDate.textContent = formatDate(photo.date) || "";
+  lightboxDate.style.display = photo.date ? "inline" : "none";
   lightbox.classList.remove("hidden");
   document.body.style.overflow = "hidden";
 }
@@ -256,11 +255,28 @@ function openLightbox(photo) {
 function closeLightbox() {
   lightbox.classList.add("hidden");
   document.body.style.overflow = "";
+  currentLightboxPhoto = null;
 }
 
 lightboxClose.addEventListener("click", closeLightbox);
 lightbox.addEventListener("click", (e) => {
   if (e.target === lightbox) closeLightbox();
+});
+
+// Download foto (kerja di HP & laptop)
+downloadBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (!currentLightboxPhoto) return;
+
+  const link = document.createElement("a");
+  link.href = currentLightboxPhoto.src;
+  const name = currentLightboxPhoto.desc
+    ? currentLightboxPhoto.desc.replace(/[^a-z0-9]/gi, "_").slice(0, 40)
+    : "kenangan";
+  link.download = `${name || "foto"}_${Date.now()}.jpg`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 });
 
 // Init
