@@ -1,9 +1,7 @@
 // ===== Cloudinary =====
-// Cloud name: djpavitu
-// WAJIB: buat Upload Preset bernama "for_mykia" dengan mode Unsigned
-// (Cloudinary Dashboard → Settings → Upload → Add upload preset)
+// Cloud name: djpavitu | Upload preset: for-mykia (Unsigned)
 const CLOUD_NAME = "djpavitu";
-const UPLOAD_PRESET = "for_mykia";
+const UPLOAD_PRESET = "for-mykia";
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 const USE_CLOUDINARY = Boolean(CLOUD_NAME && UPLOAD_PRESET);
 
@@ -281,7 +279,7 @@ photoInput.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
-/** Kompres gambar agar muat di localStorage */
+/** Kompres gambar agar muat di localStorage (fallback) */
 function compressImage(file, maxWidth = 1280, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -343,10 +341,8 @@ async function addPhoto() {
   }
 
   addPhotoBtn.disabled = true;
-  addPhotoLabel.textContent = "Menyimpan...";
-  uploadStatus.textContent = USE_CLOUDINARY
-    ? "Sedang upload ke cloud, tunggu sebentar ☁️"
-    : "Sedang memproses foto...";
+  addPhotoLabel.textContent = "Mengupload...";
+  uploadStatus.textContent = "Sedang upload ke cloud, tunggu sebentar ☁️";
 
   try {
     let src;
