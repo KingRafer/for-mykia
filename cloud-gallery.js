@@ -3,8 +3,8 @@
    Jangan pernah menaruh service_role key di file frontend.
 */
 (() => {
-  const SUPABASE_URL = "ISI_SUPABASE_PROJECT_URL";
-  const SUPABASE_ANON_KEY = "ISI_SUPABASE_ANON_KEY";
+  const SUPABASE_URL = "https://ssckyiznqzgxdplxffxl.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_OAVh0TIQLHwnQ2hnM2srLA_oowt7ZB6";
   const BUCKET = "memory-photos";
 
   const loginForm = document.getElementById("gallery-login-form");
