@@ -1,9 +1,5 @@
-// ===== Storage: folder assets/ di repo GitHub =====
+// ===== Galeri statis: foto di folder assets/ =====
 const DATA_URL = "photos/data.json";
-const ASSETS_PREFIX = "assets/";
-const LOCAL_KEY = "saskia_gallery_local_v4";
-const MAX_WIDTH = 1280;
-const JPEG_QUALITY = 0.82;
 
 // ===== Theme =====
 const themeToggle = document.getElementById("theme-toggle");
@@ -69,26 +65,6 @@ setInterval(updateCountdown, 1000);
 
 // ===== Gallery =====
 const galleryGrid = document.getElementById("gallery-grid");
-const photoInput = document.getElementById("photo-input");
-const photoDesc = document.getElementById("photo-desc");
-const photoDate = document.getElementById("photo-date");
-const addPhotoBtn = document.getElementById("add-photo-btn");
-const addPhotoLabel = document.getElementById("add-photo-label");
-const uploadStatus = document.getElementById("upload-status");
-const previewImg = document.getElementById("preview-img");
-const previewPlaceholder = document.getElementById("preview-placeholder");
-const fileDropText = document.getElementById("file-drop-text");
-
-let repoPhotos = [];
-let localPhotos = [];
-
-const GH_OWNER = "KingRafer";
-const GH_REPO = "for-mykia";
-const GH_BRANCH = "main";
-
-function getToken() {
-  return localStorage.getItem("GH_TOKEN") || "";
-}
 
 function escapeHtml(str) {
   if (!str) return "";
@@ -98,52 +74,6 @@ function escapeHtml(str) {
     .replace(/>/g, "&" + "gt;")
     .replace(/"/g, "&" + "quot;")
     .replace(/'/g, "&#39;");
-}
-
-function resolveSrc(src) {
-  if (!src) return "";
-  if (src.indexOf("http") === 0 || src.indexOf("data:") === 0 || src.indexOf("blob:") === 0) {
-    return src;
-  }
-  return src.replace(/^\//, "");
-}
-
-function loadLocal() {
-  try {
-    const raw = localStorage.getItem(LOCAL_KEY);
-    if (raw) {
-      const arr = JSON.parse(raw);
-      if (Array.isArray(arr)) return arr;
-    }
-  } catch (e) {}
-  return [];
-}
-
-function saveLocal(arr) {
-  localPhotos = arr;
-  try {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(arr));
-  } catch (e) {
-    alert("Penyimpanan lokal penuh. Set token GitHub agar foto masuk folder assets/ di repo.");
-  }
-}
-
-function allPhotos() {
-  const map = new Map();
-  repoPhotos.forEach(function (p) {
-    map.set(p.id || p.src, Object.assign({ fromRepo: true }, p));
-  });
-  localPhotos.forEach(function (p) {
-    map.set(p.id || p.src, Object.assign({ fromRepo: false }, p));
-  });
-  return Array.from(map.values()).sort(function (a, b) {
-    const da = a.date || "";
-    const db = b.date || "";
-    if (da && db) return db.localeCompare(da);
-    if (da) return -1;
-    if (db) return 1;
-    return 0;
-  });
 }
 
 function formatDate(dateStr) {
@@ -157,12 +87,11 @@ function formatDate(dateStr) {
   });
 }
 
-function renderGallery() {
-  const photos = allPhotos();
+function renderGallery(photos) {
   galleryGrid.innerHTML = "";
-  if (!photos.length) {
+  if (!photos || !photos.length) {
     galleryGrid.innerHTML =
-      '<div class="gallery-empty">Belum ada foto. Yuk tambahkan kenangan pertama! \uD83D\uDCF7\uD83D\uDC95</div>';
+      '<div class="gallery-empty">Belum ada foto. Tambahkan file ke folder <code>assets/</code> di GitHub, lalu isi <code>photos/data.json</code> \uD83D\uDCF7\uD83D\uDC95</div>';
     return;
   }
   const frag = document.createDocumentFragment();
@@ -173,7 +102,7 @@ function renderGallery() {
     const hasDate = photo.date && String(photo.date).trim() !== "";
     const safeDesc = escapeHtml(photo.desc);
     const safeAlt = hasDesc ? safeDesc : "Kenangan";
-    const src = resolveSrc(photo.src);
+    const src = (photo.src || "").replace(/^\//, "");
     var overlay = "";
     if (hasDesc || hasDate) {
       overlay = '<div class="gallery-overlay">';
@@ -185,9 +114,6 @@ function renderGallery() {
           "</span>";
       overlay += "</div>";
     }
-    const del = !photo.fromRepo
-      ? '<button type="button" class="btn-delete-photo" title="Hapus" aria-label="Hapus">\u2715</button>'
-      : "";
     card.innerHTML =
       '<div class="gallery-media">' +
       '<img src="' +
@@ -196,21 +122,7 @@ function renderGallery() {
       safeAlt +
       '" loading="lazy" decoding="async" />' +
       overlay +
-      del +
       "</div>";
-    const delBtn = card.querySelector(".btn-delete-photo");
-    if (delBtn) {
-      delBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        if (!confirm("Hapus foto ini?")) return;
-        saveLocal(
-          localPhotos.filter(function (p) {
-            return (p.id || p.src) !== (photo.id || photo.src);
-          })
-        );
-        renderGallery();
-      });
-    }
     card.addEventListener("click", function () {
       openLightbox({
         src: src,
@@ -223,273 +135,20 @@ function renderGallery() {
   galleryGrid.appendChild(frag);
 }
 
-async function loadRepoPhotos() {
+async function loadGallery() {
   try {
     const res = await fetch(DATA_URL + "?t=" + Date.now(), { cache: "no-store" });
-    if (!res.ok) return;
+    if (!res.ok) {
+      renderGallery([]);
+      return;
+    }
     const data = await res.json();
-    if (Array.isArray(data)) {
-      repoPhotos = data.map(function (p, i) {
-        return {
-          id: p.id || "repo-" + i,
-          src: p.src,
-          desc: p.desc || "",
-          date: p.date || "",
-        };
-      });
-    }
+    renderGallery(Array.isArray(data) ? data : []);
   } catch (e) {
-    console.warn("data.json", e);
+    console.warn(e);
+    renderGallery([]);
   }
 }
-
-function compressToBase64(file) {
-  return new Promise(function (resolve, reject) {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = function () {
-      URL.revokeObjectURL(url);
-      var w = img.width;
-      var h = img.height;
-      if (w > MAX_WIDTH) {
-        h = Math.round((h * MAX_WIDTH) / w);
-        w = MAX_WIDTH;
-      }
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
-      const b64 = dataUrl.split(",")[1];
-      resolve({ base64: b64, dataUrl: dataUrl });
-    };
-    img.onerror = function () {
-      URL.revokeObjectURL(url);
-      reject(new Error("Gagal memproses gambar"));
-    };
-    img.src = url;
-  });
-}
-
-async function ghFetch(path, options) {
-  options = options || {};
-  const headers = Object.assign(
-    {
-      Accept: "application/vnd.github+json",
-      Authorization: "Bearer " + getToken(),
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
-    options.headers || {}
-  );
-  return fetch("https://api.github.com" + path, Object.assign({}, options, { headers: headers }));
-}
-
-async function uploadAssetToRepo(filename, base64Content, message) {
-  const path = ASSETS_PREFIX + filename;
-  const res = await ghFetch(
-    "/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + path,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: message || "Tambah foto: " + filename,
-        content: base64Content,
-        branch: GH_BRANCH,
-      }),
-    }
-  );
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error("Upload assets gagal: " + t.slice(0, 150));
-  }
-  return path;
-}
-
-async function updateDataJson(photo) {
-  const path = "photos/data.json";
-  const getRes = await ghFetch(
-    "/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + path + "?ref=" + GH_BRANCH
-  );
-  let current = [];
-  let sha = null;
-  if (getRes.ok) {
-    const meta = await getRes.json();
-    sha = meta.sha;
-    try {
-      current = JSON.parse(atob(meta.content.replace(/\n/g, "")));
-      if (!Array.isArray(current)) current = [];
-    } catch (e) {
-      current = [];
-    }
-  } else if (getRes.status !== 404) {
-    throw new Error("Gagal baca data.json");
-  }
-
-  const entry = {
-    id: photo.id,
-    src: photo.src,
-    desc: photo.desc || "",
-    date: photo.date || "",
-  };
-  const next = [entry]
-    .concat(
-      current.filter(function (p) {
-        return p.id !== entry.id && p.src !== entry.src;
-      })
-    )
-    .slice(0, 200);
-
-  const body = {
-    message: "Galeri: update data.json",
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(next, null, 2) + "\n"))),
-    branch: GH_BRANCH,
-  };
-  if (sha) body.sha = sha;
-
-  const putRes = await ghFetch(
-    "/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + path,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }
-  );
-  if (!putRes.ok) {
-    const t = await putRes.text();
-    throw new Error("Update data.json gagal: " + t.slice(0, 150));
-  }
-  repoPhotos = next;
-  return next;
-}
-
-// ===== Modal =====
-const addModal = document.getElementById("add-modal");
-const openAddModalBtn = document.getElementById("open-add-modal");
-const closeAddModalBtn = document.getElementById("close-add-modal");
-
-function openAddModal() {
-  addModal.classList.remove("hidden");
-  addModal.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
-  if (getToken()) {
-    uploadStatus.textContent = "Foto akan disimpan ke folder assets/ di GitHub.";
-  } else {
-    uploadStatus.textContent =
-      "Belum ada token. Foto hanya di perangkat ini. Set token agar masuk repo.";
-  }
-}
-function closeAddModal() {
-  addModal.classList.add("hidden");
-  addModal.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
-  photoInput.value = "";
-  photoDesc.value = "";
-  photoDate.value = "";
-  previewImg.src = "";
-  previewImg.classList.add("hidden");
-  previewPlaceholder.classList.remove("hidden");
-  fileDropText.textContent = "Klik atau pilih foto";
-  addPhotoLabel.textContent = "Simpan ke Galeri";
-  addPhotoBtn.disabled = false;
-}
-openAddModalBtn.addEventListener("click", openAddModal);
-closeAddModalBtn.addEventListener("click", closeAddModal);
-addModal.addEventListener("click", function (e) {
-  if (e.target === addModal) closeAddModal();
-});
-document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
-    closeAddModal();
-    closeLightbox();
-  }
-});
-photoInput.addEventListener("change", function () {
-  const file = photoInput.files[0];
-  if (!file || !file.type.startsWith("image/")) return;
-  fileDropText.textContent = file.name;
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    previewImg.src = e.target.result;
-    previewImg.classList.remove("hidden");
-    previewPlaceholder.classList.add("hidden");
-  };
-  reader.readAsDataURL(file);
-});
-
-async function addPhoto() {
-  const file = photoInput.files[0];
-  if (!file) {
-    alert("Pilih foto dulu ya \uD83D\uDC95");
-    return;
-  }
-  if (!file.type.startsWith("image/")) {
-    alert("File harus berupa gambar!");
-    return;
-  }
-  if (file.size > 15 * 1024 * 1024) {
-    alert("Ukuran foto terlalu besar (maks ~15MB).");
-    return;
-  }
-
-  addPhotoBtn.disabled = true;
-  addPhotoLabel.textContent = "Memproses...";
-  uploadStatus.textContent = "Kompres foto...";
-
-  try {
-    const compressed = await compressToBase64(file);
-    const id = "img-" + Date.now();
-    const filename = id + ".jpg";
-    const token = getToken();
-
-    if (token) {
-      uploadStatus.textContent = "Upload ke assets/ di GitHub...";
-      const assetPath = await uploadAssetToRepo(
-        filename,
-        compressed.base64,
-        "Foto: " + filename
-      );
-      const photo = {
-        id: id,
-        src: assetPath,
-        desc: photoDesc.value.trim(),
-        date: photoDate.value || "",
-      };
-      uploadStatus.textContent = "Update data.json...";
-      await updateDataJson(photo);
-      uploadStatus.textContent = "Tersimpan di assets/ \u2713";
-      saveLocal(
-        localPhotos.filter(function (p) {
-          return p.id !== id;
-        })
-      );
-      renderGallery();
-    } else {
-      const photo = {
-        id: id,
-        src: compressed.dataUrl,
-        desc: photoDesc.value.trim(),
-        date: photoDate.value || "",
-      };
-      saveLocal([photo].concat(localPhotos));
-      renderGallery();
-      uploadStatus.textContent =
-        "Tersimpan di perangkat ini. Untuk GitHub: setGithubToken(\"ghp_...\") di Console.";
-    }
-
-    closeAddModal();
-    document.getElementById("gallery").scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  } catch (err) {
-    console.error(err);
-    uploadStatus.textContent = "Gagal: " + (err.message || "coba lagi");
-    addPhotoLabel.textContent = "Coba Lagi";
-    addPhotoBtn.disabled = false;
-  }
-}
-addPhotoBtn.addEventListener("click", addPhoto);
 
 // ===== Lightbox =====
 const lightbox = document.getElementById("lightbox");
@@ -515,41 +174,34 @@ function closeLightbox() {
   document.body.style.overflow = "";
   currentLightboxPhoto = null;
 }
-lightboxClose.addEventListener("click", closeLightbox);
-lightbox.addEventListener("click", function (e) {
-  if (e.target === lightbox) closeLightbox();
+if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
+if (lightbox) {
+  lightbox.addEventListener("click", function (e) {
+    if (e.target === lightbox) closeLightbox();
+  });
+}
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") closeLightbox();
 });
-downloadBtn.addEventListener("click", async function (e) {
-  e.stopPropagation();
-  if (!currentLightboxPhoto) return;
-  try {
-    const res = await fetch(currentLightboxPhoto.src);
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "foto.jpg";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    window.open(currentLightboxPhoto.src, "_blank");
-  }
-});
+if (downloadBtn) {
+  downloadBtn.addEventListener("click", async function (e) {
+    e.stopPropagation();
+    if (!currentLightboxPhoto) return;
+    try {
+      const res = await fetch(currentLightboxPhoto.src);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "foto.jpg";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      window.open(currentLightboxPhoto.src, "_blank");
+    }
+  });
+}
 
-window.setGithubToken = function (token) {
-  if (!token) {
-    localStorage.removeItem("GH_TOKEN");
-    alert("Token dihapus");
-    return;
-  }
-  localStorage.setItem("GH_TOKEN", token.trim());
-  alert("OK! Upload berikutnya masuk ke folder assets/ di GitHub.");
-};
-
-(async function init() {
-  localPhotos = loadLocal();
-  await loadRepoPhotos();
-  renderGallery();
-})();
+loadGallery();
