@@ -25,9 +25,10 @@ to anon, authenticated
 using (true);
 
 drop policy if exists "Signed-in users can add gallery metadata" on public.gallery_photos;
-create policy "Signed-in users can add gallery metadata"
+drop policy if exists "Anyone can upload gallery metadata" on public.gallery_photos;
+create policy "Anyone can upload gallery metadata"
 on public.gallery_photos for insert
-to authenticated
+to anon, authenticated
 with check (true);
 
 drop policy if exists "Public can view gallery images" on storage.objects;
@@ -37,7 +38,8 @@ to anon, authenticated
 using (bucket_id = 'memory-photos');
 
 drop policy if exists "Signed-in users can upload gallery images" on storage.objects;
-create policy "Signed-in users can upload gallery images"
+drop policy if exists "Anyone can upload gallery images" on storage.objects;
+create policy "Anyone can upload gallery images"
 on storage.objects for insert
-to authenticated
+to anon, authenticated
 with check (bucket_id = 'memory-photos');
