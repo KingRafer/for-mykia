@@ -99,42 +99,7 @@
     </div>
   </section>
 
-  <!-- Story -->
-  <section class="story-section" id="story">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-logo">📖</span>
-        <h2 class="section-title">Kisah Kita</h2>
-      </div>
-
-      <div class="timeline">
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <h3>Pertama Bertemu</h3>
-            <p>Hari di mana senyummu membuat dunia terasa lebih berwarna. Dari situ, semuanya berubah.</p>
-          </div>
-        </div>
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <h3>Jadian</h3>
-            <p class="highlight-date">17 Oktober 2026</p>
-            <p>Hari di mana aku berani bilang "kita". Hari di mana kamu memilihku. Terima kasih, Saskia.</p>
-          </div>
-        </div>
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <h3>Hari Ini & Selamanya</h3>
-            <p>Setiap hari adalah halaman baru. Aku ingin menulis cerita panjang ini bersamamu, sampai tua.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Love Notes -->
+  <!-- Love Notes — hanya 1 -->
   <section class="notes-section" id="notes">
     <div class="container">
       <div class="section-header">
@@ -142,32 +107,17 @@
         <h2 class="section-title">Catatan untuk Saskia</h2>
       </div>
 
-      <div class="notes-grid">
-        <div class="note-card">
+      <div class="note-single">
+        <div class="note-card note-card-single">
           <div class="note-icon">💖</div>
-          <p>"Kamu adalah rumah yang selalu ingin kutuju."</p>
-          <span class="note-from">— Rafer</span>
-        </div>
-        <div class="note-card">
-          <div class="note-icon">🌸</div>
-          <p>"Bersamamu, hari-hari biasa jadi istimewa."</p>
-          <span class="note-from">— Rafer</span>
-        </div>
-        <div class="note-card">
-          <div class="note-icon">🌙</div>
-          <p>"Di setiap malam, doaku selalu untukmu."</p>
-          <span class="note-from">— Rafer</span>
-        </div>
-        <div class="note-card">
-          <div class="note-icon">✨</div>
-          <p>"Cinta kita bintang yang tak pernah padam."</p>
+          <p>"Always remember that I care about you."</p>
           <span class="note-from">— Rafer</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Gallery (clean, no form) -->
+  <!-- Gallery -->
   <section class="gallery-section" id="gallery">
     <div class="container">
       <div class="section-header">
@@ -200,7 +150,7 @@
     </div>
   </footer>
 
-  <!-- ========== MODAL: Tambah Foto (terpisah & aesthetic) ========== -->
+  <!-- Modal Tambah Foto -->
   <div id="add-modal" class="modal-overlay hidden" aria-hidden="true">
     <div class="modal-card">
       <button type="button" class="modal-close" id="close-add-modal" aria-label="Tutup">✕</button>
@@ -212,7 +162,6 @@
       </div>
 
       <div class="modal-body">
-        <!-- Preview area -->
         <div class="photo-preview-wrap" id="preview-wrap">
           <div class="photo-preview-placeholder" id="preview-placeholder">
             <span class="preview-icon">📷</span>
@@ -231,7 +180,7 @@
 
         <div class="form-group">
           <label for="photo-desc">Deskripsi <span class="optional">(opsional)</span></label>
-          <input type="text" id="photo-desc" placeholder="Contoh: Jalan sore di pantai..." maxlength="120" />
+          <input type="text" id="photo-desc" placeholder="Boleh dikosongkan..." maxlength="120" />
         </div>
 
         <div class="form-group">
@@ -249,13 +198,16 @@
     </div>
   </div>
 
-  <!-- Lightbox -->
+  <!-- Lightbox + Download -->
   <div id="lightbox" class="lightbox hidden">
     <button class="lightbox-close" id="lightbox-close">✕</button>
     <img id="lightbox-img" src="" alt="" />
     <div class="lightbox-info">
       <p id="lightbox-desc"></p>
       <span id="lightbox-date"></span>
+      <button type="button" id="download-btn" class="btn-download">
+        <span>⬇</span> Download Foto
+      </button>
     </div>
   </div>
 
