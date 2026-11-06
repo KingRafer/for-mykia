@@ -1,19 +1,22 @@
 // ===== Cloudinary =====
-// Cloud name: djpavitu | Upload preset: for-mykia (Unsigned)
 const CLOUD_NAME = "djpavitu";
 const UPLOAD_PRESET = "for-mykia";
-const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-const USE_CLOUDINARY = Boolean(CLOUD_NAME && UPLOAD_PRESET);
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/" + CLOUD_NAME + "/image/upload";
+const USE_CLOUDINARY = true;
 
-// ===== Theme Toggle =====
+// Live gallery API (Vercel serverless → GitHub photos/data.json)
+const GALLERY_API = "/api/gallery";
+const CACHE_KEY = "saskia_gallery_cache_v2";
+const POLL_MS = 12000;
+
+// ===== Theme =====
 const themeToggle = document.getElementById("theme-toggle");
 const body = document.body;
-
 const savedTheme = localStorage.getItem("theme") || "light";
 body.classList.remove("light", "dark");
 body.classList.add(savedTheme);
 
-themeToggle.addEventListener("click", () => {
+themeToggle.addEventListener("click", function () {
   const isDark = body.classList.contains("dark");
   body.classList.remove("light", "dark");
   body.classList.add(isDark ? "light" : "dark");
@@ -26,7 +29,7 @@ const musicIcon = document.getElementById("music-icon");
 const bgMusic = document.getElementById("bg-music");
 let isPlaying = false;
 
-musicToggle.addEventListener("click", async () => {
+musicToggle.addEventListener("click", async function () {
   try {
     if (isPlaying) {
       bgMusic.pause();
@@ -44,9 +47,9 @@ musicToggle.addEventListener("click", async () => {
   }
 });
 
-document.addEventListener("visibilitychange", () => {
+document.addEventListener("visibilitychange", function () {
   if (document.hidden && isPlaying) bgMusic.pause();
-  else if (!document.hidden && isPlaying) bgMusic.play().catch(() => {});
+  else if (!document.hidden && isPlaying) bgMusic.play().catch(function () {});
 });
 
 // ===== Countdown =====
@@ -55,7 +58,6 @@ const anniversaryDate = new Date("2026-10-17T00:00:00+07:00").getTime();
 function updateCountdown() {
   const now = Date.now();
   const distance = now - anniversaryDate;
-
   const totalSeconds = Math.floor(Math.abs(distance) / 1000);
   const days = Math.floor(totalSeconds / (60 * 60 * 24));
   const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
@@ -68,20 +70,15 @@ function updateCountdown() {
   document.getElementById("seconds").textContent = String(seconds).padStart(2, "0");
 
   const statusEl = document.getElementById("anniversary-status");
-  if (distance < 0) {
-    statusEl.textContent = "Menuju 17 Oktober 2026 \uD83D\uDC95";
-  } else if (days === 0) {
-    statusEl.textContent = "Hari ini hari jadian kita! \uD83C\uDF89\uD83D\uDC95";
-  } else {
-    statusEl.textContent = "Sudah " + days + " hari bersama Saskia \uD83D\uDC95";
-  }
+  if (distance < 0) statusEl.textContent = "Menuju 17 Oktober 2026 \uD83D\uDC95";
+  else if (days === 0) statusEl.textContent = "Hari ini hari jadian kita! \uD83C\uDF89\uD83D\uDC95";
+  else statusEl.textContent = "Sudah " + days + " hari bersama Saskia \uD83D\uDC95";
 }
 
 updateCountdown();
 setInterval(updateCountdown, 1000);
 
-// ===== Gallery =====
-const STORAGE_KEY = "saskia_gallery_photos";
+// ===== Gallery state =====
 const galleryGrid = document.getElementById("gallery-grid");
 const photoInput = document.getElementById("photo-input");
 const photoDesc = document.getElementById("photo-desc");
@@ -93,7 +90,8 @@ const previewImg = document.getElementById("preview-img");
 const previewPlaceholder = document.getElementById("preview-placeholder");
 const fileDropText = document.getElementById("file-drop-text");
 
-let permanentPhotos = [];
+let livePhotos = [];
+let lastFingerprint = "";
 
 function escapeHtml(str) {
   if (!str) return "";
@@ -105,31 +103,42 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
-function loadLocalPhotos() {
+function optimizedUrl(url, width) {
+  width = width || 900;
+  if (!url || url.indexOf("res.cloudinary.com") === -1) return url;
+  if (url.indexOf("/upload/") === -1) return url;
+  if (/\/upload\/[^/]+,[^/]+\//.test(url)) return url;
+  return url.replace(
+    "/upload/",
+    "/upload/c_limit,w_" + width + ",f_auto,q_auto/"
+  );
+}
+
+function fingerprint(photos) {
+  return photos
+    .map(function (p) {
+      return (p.id || "") + "|" + (p.src || "");
+    })
+    .join(";");
+}
+
+function cacheSave(photos) {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
+    localStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify({ t: Date.now(), photos: photos })
+    );
   } catch (e) {}
-  return [];
 }
 
-function saveLocalPhotos(photos) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
-}
-
-function getAllPhotos() {
-  const local = loadLocalPhotos();
-  const map = new Map();
-  permanentPhotos.forEach((p) => map.set(p.id || p.src, p));
-  local.forEach((p) => map.set(p.id || p.src, p));
-  return Array.from(map.values()).sort((a, b) => {
-    const da = a.date || "";
-    const db = b.date || "";
-    if (da && db) return db.localeCompare(da);
-    if (da) return -1;
-    if (db) return 1;
-    return 0;
-  });
+function cacheLoad() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (data && Array.isArray(data.photos)) return data.photos;
+  } catch (e) {}
+  return null;
 }
 
 function formatDate(dateStr) {
@@ -143,8 +152,9 @@ function formatDate(dateStr) {
   });
 }
 
-function renderGallery() {
-  const photos = getAllPhotos();
+function renderGallery(photos) {
+  photos = photos || livePhotos;
+  livePhotos = photos;
   galleryGrid.innerHTML = "";
 
   if (!photos.length) {
@@ -153,69 +163,157 @@ function renderGallery() {
     return;
   }
 
-  photos.forEach((photo) => {
+  const frag = document.createDocumentFragment();
+
+  photos.forEach(function (photo) {
     const card = document.createElement("div");
     card.className = "gallery-card";
 
     const hasDesc = photo.desc && photo.desc.trim() !== "";
-    const hasDate = photo.date && photo.date.trim() !== "";
-    const hasOverlay = hasDesc || hasDate;
+    const hasDate = photo.date && String(photo.date).trim() !== "";
     const safeDesc = escapeHtml(photo.desc);
     const safeAlt = hasDesc ? safeDesc : "Kenangan";
+    const thumb = optimizedUrl(photo.src, 700);
+    const full = optimizedUrl(photo.src, 1600);
 
-    let overlay = "";
-    if (hasOverlay) {
+    var overlay = "";
+    if (hasDesc || hasDate) {
       overlay = '<div class="gallery-overlay">';
-      if (hasDesc) overlay += '<p class="overlay-desc">' + safeDesc + '</p>';
-      if (hasDate) overlay += '<span class="overlay-date">' + escapeHtml(formatDate(photo.date)) + '</span>';
-      overlay += '</div>';
+      if (hasDesc) overlay += '<p class="overlay-desc">' + safeDesc + "</p>";
+      if (hasDate)
+        overlay +=
+          '<span class="overlay-date">' +
+          escapeHtml(formatDate(photo.date)) +
+          "</span>";
+      overlay += "</div>";
     }
-
-    const delBtn = photo.local
-      ? '<button type="button" class="btn-delete-photo" title="Hapus foto" aria-label="Hapus foto">\u2715</button>'
-      : "";
 
     card.innerHTML =
       '<div class="gallery-media">' +
-      '<img src="' + escapeHtml(photo.src) + '" alt="' + safeAlt + '" loading="lazy" />' +
+      '<img src="' +
+      escapeHtml(thumb) +
+      '" alt="' +
+      safeAlt +
+      '" loading="lazy" decoding="async" />' +
       overlay +
-      delBtn +
-      '</div>';
+      '<button type="button" class="btn-delete-photo" title="Hapus foto" aria-label="Hapus foto">\u2715</button>' +
+      "</div>";
 
-    const deleteBtn = card.querySelector(".btn-delete-photo");
-    if (deleteBtn) {
-      deleteBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (confirm("Hapus foto ini dari galeri?")) {
-          const list = loadLocalPhotos().filter(
-            (p) => (p.id || p.src) !== (photo.id || photo.src)
-          );
-          saveLocalPhotos(list);
-          renderGallery();
-        }
+    card.querySelector(".btn-delete-photo").addEventListener("click", function (e) {
+      e.stopPropagation();
+      deletePhoto(photo);
+    });
+
+    card.addEventListener("click", function () {
+      openLightbox({
+        src: full || photo.src,
+        desc: photo.desc,
+        date: photo.date,
+        id: photo.id,
       });
-    }
+    });
 
-    card.addEventListener("click", () => openLightbox(photo));
-    galleryGrid.appendChild(card);
+    frag.appendChild(card);
   });
+
+  galleryGrid.appendChild(frag);
 }
 
-async function loadPermanentPhotos() {
+async function fetchLivePhotos(opts) {
+  opts = opts || {};
   try {
-    const res = await fetch("photos/data.json", { cache: "no-cache" });
-    if (!res.ok) return;
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      permanentPhotos = data.map((p, i) => ({
-        id: p.id || ("permanent-" + i + "-" + p.src),
-        src: p.src,
-        desc: p.desc || "",
-        date: p.date || "",
-        local: false,
-      }));
+    const res = await fetch(GALLERY_API + "?t=" + Date.now(), {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(function () {
+        return {};
+      });
+      throw new Error(err.error || "Gagal memuat galeri (" + res.status + ")");
     }
-  } catch (e) {}
+    const data = await res.json();
+    const photos = Array.isArray(data.photos) ? data.photos : [];
+    const fp = fingerprint(photos);
+    if (opts.force || fp !== lastFingerprint) {
+      lastFingerprint = fp;
+      cacheSave(photos);
+      renderGallery(photos);
+    }
+    setSyncStatus(true);
+    return photos;
+  } catch (err) {
+    console.warn(err);
+    setSyncStatus(false, err.message);
+    if (!livePhotos.length) {
+      const cached = cacheLoad();
+      if (cached) renderGallery(cached);
+    }
+    return livePhotos;
+  }
+}
+
+function setSyncStatus(ok, msg) {
+  var el = document.getElementById("sync-status");
+  if (!el) return;
+  if (ok) {
+    el.textContent = "\u25CF Live";
+    el.className = "sync-status sync-ok";
+    el.title = "Galeri tersinkron di semua perangkat";
+  } else {
+    el.textContent = "\u25CF Offline";
+    el.className = "sync-status sync-err";
+    el.title = msg || "Tidak bisa sync \u2014 set GITHUB_TOKEN di Vercel";
+  }
+}
+
+async function savePhotoLive(photo) {
+  const res = await fetch(GALLERY_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(photo),
+  });
+  const data = await res.json().catch(function () {
+    return {};
+  });
+  if (!res.ok) throw new Error(data.error || "Gagal menyimpan ke server");
+  if (Array.isArray(data.photos)) {
+    lastFingerprint = fingerprint(data.photos);
+    cacheSave(data.photos);
+    renderGallery(data.photos);
+  }
+  return data;
+}
+
+async function deletePhoto(photo) {
+  if (!confirm("Hapus foto ini dari galeri (semua perangkat)?")) return;
+
+  const prev = livePhotos.slice();
+  renderGallery(
+    livePhotos.filter(function (p) {
+      return (p.id || p.src) !== (photo.id || photo.src);
+    })
+  );
+
+  try {
+    const res = await fetch(GALLERY_API, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: photo.id, src: photo.src }),
+    });
+    const data = await res.json().catch(function () {
+      return {};
+    });
+    if (!res.ok) throw new Error(data.error || "Gagal hapus");
+    if (Array.isArray(data.photos)) {
+      lastFingerprint = fingerprint(data.photos);
+      cacheSave(data.photos);
+      renderGallery(data.photos);
+    }
+  } catch (err) {
+    console.error(err);
+    renderGallery(prev);
+    alert("Gagal hapus: " + (err.message || "coba lagi"));
+  }
 }
 
 // ===== Modal =====
@@ -227,9 +325,7 @@ function openAddModal() {
   addModal.classList.remove("hidden");
   addModal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
-  uploadStatus.textContent = USE_CLOUDINARY
-    ? "Foto diupload ke cloud, aman & permanen."
-    : "Foto disimpan di browser ini (localStorage).";
+  uploadStatus.textContent = "Foto diupload ke cloud & muncul di semua perangkat.";
 }
 
 function closeAddModal() {
@@ -243,33 +339,30 @@ function closeAddModal() {
   previewImg.classList.add("hidden");
   previewPlaceholder.classList.remove("hidden");
   fileDropText.textContent = "Klik atau pilih foto";
-  uploadStatus.textContent = USE_CLOUDINARY
-    ? "Foto diupload ke cloud, aman & permanen."
-    : "Foto disimpan di browser ini (localStorage).";
+  uploadStatus.textContent = "Foto diupload ke cloud & muncul di semua perangkat.";
   addPhotoLabel.textContent = "Simpan ke Galeri";
   addPhotoBtn.disabled = false;
 }
 
 openAddModalBtn.addEventListener("click", openAddModal);
 closeAddModalBtn.addEventListener("click", closeAddModal);
-addModal.addEventListener("click", (e) => {
+addModal.addEventListener("click", function (e) {
   if (e.target === addModal) closeAddModal();
 });
 
-document.addEventListener("keydown", (e) => {
+document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") {
     closeAddModal();
     closeLightbox();
   }
 });
 
-photoInput.addEventListener("change", () => {
+photoInput.addEventListener("change", function () {
   const file = photoInput.files[0];
   if (!file || !file.type.startsWith("image/")) return;
-
   fileDropText.textContent = file.name;
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = function (e) {
     previewImg.src = e.target.result;
     previewImg.classList.remove("hidden");
     previewPlaceholder.classList.add("hidden");
@@ -277,50 +370,19 @@ photoInput.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
-function compressImage(file, maxWidth, quality) {
-  maxWidth = maxWidth || 1280;
-  quality = quality || 0.82;
-  return new Promise(function (resolve, reject) {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = function () {
-      URL.revokeObjectURL(url);
-      var width = img.width;
-      var height = img.height;
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width);
-        width = maxWidth;
-      }
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL("image/jpeg", quality));
-    };
-    img.onerror = function () {
-      URL.revokeObjectURL(url);
-      reject(new Error("Gagal memproses gambar"));
-    };
-    img.src = url;
-  });
-}
-
 async function uploadToCloudinary(file) {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", UPLOAD_PRESET);
+  formData.append("folder", "for-kia");
 
-  const res = await fetch(CLOUDINARY_URL, {
-    method: "POST",
-    body: formData,
-  });
-
+  const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
   if (!res.ok) {
-    const err = await res.json().catch(function () { return {}; });
+    const err = await res.json().catch(function () {
+      return {};
+    });
     throw new Error((err.error && err.error.message) || "Upload cloud gagal");
   }
-
   return res.json();
 }
 
@@ -334,46 +396,28 @@ async function addPhoto() {
     alert("File harus berupa gambar!");
     return;
   }
-
-  if (file.size > 8 * 1024 * 1024) {
-    alert("Ukuran foto terlalu besar (maks ~8MB). Coba pilih yang lebih kecil ya \uD83D\uDC95");
+  if (file.size > 12 * 1024 * 1024) {
+    alert("Ukuran foto terlalu besar (maks ~12MB).");
     return;
   }
 
   addPhotoBtn.disabled = true;
   addPhotoLabel.textContent = "Mengupload...";
-  uploadStatus.textContent = "Sedang upload ke cloud, tunggu sebentar \u2601\uFE0F";
+  uploadStatus.textContent = "Upload ke Cloudinary...";
 
   try {
-    var src;
-    var id;
-
-    if (USE_CLOUDINARY) {
-      try {
-        const result = await uploadToCloudinary(file);
-        src = result.secure_url;
-        id = result.public_id || ("cloud-" + Date.now());
-      } catch (cloudErr) {
-        console.warn("Cloudinary gagal, fallback lokal:", cloudErr);
-        uploadStatus.textContent = "Cloud gagal, menyimpan di browser...";
-        src = await compressImage(file);
-        id = "local-" + Date.now();
-      }
-    } else {
-      src = await compressImage(file);
-      id = "local-" + Date.now();
-    }
-
-    const photos = loadLocalPhotos();
-    photos.unshift({
-      id: id,
-      src: src,
+    const result = await uploadToCloudinary(file);
+    const photo = {
+      id: result.public_id || "cloud-" + Date.now(),
+      src: result.secure_url,
       desc: photoDesc.value.trim(),
       date: photoDate.value || "",
-      local: !String(src).startsWith("https://res.cloudinary.com"),
-    });
-    saveLocalPhotos(photos);
-    renderGallery();
+    };
+
+    renderGallery([photo].concat(livePhotos));
+    uploadStatus.textContent = "Menyimpan ke galeri live...";
+
+    await savePhotoLive(photo);
     closeAddModal();
     document.getElementById("gallery").scrollIntoView({
       behavior: "smooth",
@@ -384,19 +428,19 @@ async function addPhoto() {
     uploadStatus.textContent = "Gagal: " + (err.message || "coba lagi");
     addPhotoLabel.textContent = "Coba Lagi";
     addPhotoBtn.disabled = false;
+    fetchLivePhotos({ force: true });
   }
 }
 
 addPhotoBtn.addEventListener("click", addPhoto);
 
-// ===== Lightbox + Download =====
+// ===== Lightbox =====
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
 const lightboxDesc = document.getElementById("lightbox-desc");
 const lightboxDate = document.getElementById("lightbox-date");
 const lightboxClose = document.getElementById("lightbox-close");
 const downloadBtn = document.getElementById("download-btn");
-
 let currentLightboxPhoto = null;
 
 function openLightbox(photo) {
@@ -417,17 +461,15 @@ function closeLightbox() {
 }
 
 lightboxClose.addEventListener("click", closeLightbox);
-lightbox.addEventListener("click", (e) => {
+lightbox.addEventListener("click", function (e) {
   if (e.target === lightbox) closeLightbox();
 });
 
-downloadBtn.addEventListener("click", async (e) => {
+downloadBtn.addEventListener("click", async function (e) {
   e.stopPropagation();
   if (!currentLightboxPhoto) return;
-
   try {
-    const src = currentLightboxPhoto.src;
-    const res = await fetch(src);
+    const res = await fetch(currentLightboxPhoto.src);
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -449,8 +491,29 @@ downloadBtn.addEventListener("click", async (e) => {
   }
 });
 
-// Init
-(async function init() {
-  await loadPermanentPhotos();
-  renderGallery();
+function startLiveSync() {
+  setInterval(function () {
+    if (!document.hidden) fetchLivePhotos();
+  }, POLL_MS);
+
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) fetchLivePhotos();
+  });
+
+  window.addEventListener("focus", function () {
+    fetchLivePhotos();
+  });
+}
+
+(function init() {
+  const cached = cacheLoad();
+  if (cached && cached.length) {
+    livePhotos = cached;
+    lastFingerprint = fingerprint(cached);
+    renderGallery(cached);
+  } else {
+    renderGallery([]);
+  }
+  fetchLivePhotos({ force: true });
+  startLiveSync();
 })();
