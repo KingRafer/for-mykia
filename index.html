@@ -123,7 +123,7 @@
       <div class="gallery-actions">
         <button type="button" id="open-add-modal" class="btn-add-memory">
           <span class="btn-icon">✨</span>
-          <span>Cara Tambah Foto</span>
+          <span>Tambah Kenangan</span>
         </button>
       </div>
 
@@ -146,34 +146,44 @@
       <button type="button" class="modal-close" id="close-add-modal" aria-label="Tutup">✕</button>
 
       <div class="modal-header">
-        <span class="modal-logo">📁</span>
-        <h2>Tambah Foto ke Galeri</h2>
-        <p>Foto disimpan permanen di folder repo</p>
+        <span class="modal-logo">🌸</span>
+        <h2>Tambah Kenangan</h2>
+        <p>Foto tersimpan di cloud ☁️</p>
       </div>
 
-      <div class="modal-body modal-howto">
-        <ol class="howto-steps">
-          <li>
-            <strong>Upload foto</strong><br />
-            Ke folder <code>photos/</code> di GitHub<br />
-            <a href="https://github.com/KingRafer/for-kia/tree/main/photos" target="_blank" rel="noopener">Buka folder photos →</a>
-          </li>
-          <li>
-            <strong>Edit <code>data.json</code></strong><br />
-            Tambahkan entri seperti ini:
-            <pre class="code-block">{
-  "src": "photos/nama-file.jpg",
-  "desc": "",
-  "date": "2026-10-17"
-}</pre>
-            <span class="howto-note"><code>desc</code> & <code>date</code> boleh dikosongkan</span>
-          </li>
-          <li>
-            <strong>Commit & push</strong><br />
-            Vercel akan update otomatis dalam 1–2 menit
-          </li>
-        </ol>
-        <p class="modal-hint">Atau kirim fotonya ke Rafer, nanti diupload ke repo 💕</p>
+      <div class="modal-body">
+        <div class="photo-preview-wrap" id="preview-wrap">
+          <div class="photo-preview-placeholder" id="preview-placeholder">
+            <span class="preview-icon">📷</span>
+            <span>Pilih foto untuk preview</span>
+          </div>
+          <img id="preview-img" class="photo-preview-img hidden" alt="Preview" />
+        </div>
+
+        <div class="form-group">
+          <label for="photo-input">Foto</label>
+          <label class="file-drop" for="photo-input">
+            <span class="file-drop-text" id="file-drop-text">Klik atau pilih foto</span>
+            <input type="file" id="photo-input" accept="image/*" hidden />
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="photo-desc">Deskripsi <span class="optional">(opsional)</span></label>
+          <input type="text" id="photo-desc" placeholder="Boleh dikosongkan..." maxlength="120" />
+        </div>
+
+        <div class="form-group">
+          <label for="photo-date">Tanggal <span class="optional">(opsional)</span></label>
+          <input type="date" id="photo-date" />
+        </div>
+
+        <button type="button" id="add-photo-btn" class="btn-submit">
+          <span id="add-photo-label">Simpan ke Galeri</span>
+          <span class="btn-heart">💕</span>
+        </button>
+
+        <p class="modal-hint" id="upload-status">Foto diupload ke cloud, aman & permanen.</p>
       </div>
     </div>
   </div>
