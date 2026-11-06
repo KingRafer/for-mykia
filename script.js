@@ -1,8 +1,9 @@
-// ===== Cloudinary (opsional) =====
-// Buat Unsigned Upload Preset di Cloudinary Dashboard → Settings → Upload
-// lalu isi nama preset di bawah. Kalau kosong / error, otomatis pakai penyimpanan lokal (base64).
+// ===== Cloudinary =====
+// Cloud name: djpavitu
+// WAJIB: buat Upload Preset bernama "for_mykia" dengan mode Unsigned
+// (Cloudinary Dashboard → Settings → Upload → Add upload preset)
 const CLOUD_NAME = "djpavitu";
-const UPLOAD_PRESET = ""; // contoh: "for_mykia" — harus Unsigned Upload Preset
+const UPLOAD_PRESET = "for_mykia";
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 const USE_CLOUDINARY = Boolean(CLOUD_NAME && UPLOAD_PRESET);
 
@@ -99,10 +100,10 @@ let permanentPhotos = [];
 function escapeHtml(str) {
   if (!str) return "";
   return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/&/g, "&")
+    .replace(/</g, "<")
+    .replace(/>/g, ">")
+    .replace(/"/g, """)
     .replace(/'/g, "&#39;");
 }
 
@@ -373,7 +374,7 @@ async function addPhoto() {
       src,
       desc: photoDesc.value.trim(),
       date: photoDate.value || "",
-      local: true,
+      local: !String(src).startsWith("https://res.cloudinary.com"),
     });
     saveLocalPhotos(photos);
     renderGallery();
