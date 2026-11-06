@@ -1,7 +1,10 @@
-// ===== Cloudinary =====
+// ===== Cloudinary (opsional) =====
+// Buat Unsigned Upload Preset di Cloudinary Dashboard → Settings → Upload
+// lalu isi nama preset di bawah. Kalau kosong / error, otomatis pakai penyimpanan lokal (base64).
 const CLOUD_NAME = "djpavitu";
-const UPLOAD_PRESET = "124d502204e3ad7";
+const UPLOAD_PRESET = ""; // contoh: "for_mykia" — harus Unsigned Upload Preset
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+const USE_CLOUDINARY = Boolean(CLOUD_NAME && UPLOAD_PRESET);
 
 // ===== Theme Toggle =====
 const themeToggle = document.getElementById("theme-toggle");
@@ -66,15 +69,19 @@ function updateCountdown() {
   document.getElementById("seconds").textContent = String(seconds).padStart(2, "0");
 
   const statusEl = document.getElementById("anniversary-status");
-  if (distance < 0) statusEl.textContent = "Menuju 17 Oktober 2026 💕";
-  else if (days === 0 && hours < 24) statusEl.textContent = "Hari ini hari jadian kita! 🎉💕";
-  else statusEl.textContent = `Sudah ${days} hari bersama Saskia 💕`;
+  if (distance < 0) {
+    statusEl.textContent = "Menuju 17 Oktober 2026 💕";
+  } else if (days === 0) {
+    statusEl.textContent = "Hari ini hari jadian kita! 🎉💕";
+  } else {
+    statusEl.textContent = `Sudah ${days} hari bersama Saskia 💕`;
+  }
 }
 
 updateCountdown();
 setInterval(updateCountdown, 1000);
 
-// ===== Gallery (Cloudinary URLs + localStorage list) =====
+// ===== Gallery =====
 const STORAGE_KEY = "saskia_gallery_photos";
 const galleryGrid = document.getElementById("gallery-grid");
 const photoInput = document.getElementById("photo-input");
@@ -87,7 +94,19 @@ const previewImg = document.getElementById("preview-img");
 const previewPlaceholder = document.getElementById("preview-placeholder");
 const fileDropText = document.getElementById("file-drop-text");
 
-function loadPhotos() {
+let permanentPhotos = [];
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function loadLocalPhotos() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) return JSON.parse(saved);
@@ -95,13 +114,29 @@ function loadPhotos() {
   return [];
 }
 
-function savePhotos(photos) {
+function saveLocalPhotos(photos) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
+}
+
+function getAllPhotos() {
+  const local = loadLocalPhotos();
+  const map = new Map();
+  permanentPhotos.forEach((p) => map.set(p.id || p.src, p));
+  local.forEach((p) => map.set(p.id || p.src, p));
+  return Array.from(map.values()).sort((a, b) => {
+    const da = a.date || "";
+    const db = b.date || "";
+    if (da && db) return db.localeCompare(da);
+    if (da) return -1;
+    if (db) return 1;
+    return 0;
+  });
 }
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
   const d = new Date(dateStr + "T00:00:00");
+  if (Number.isNaN(d.getTime())) return dateStr;
   return d.toLocaleDateString("id-ID", {
     day: "numeric",
     month: "long",
@@ -110,7 +145,7 @@ function formatDate(dateStr) {
 }
 
 function renderGallery() {
-  const photos = loadPhotos();
+  const photos = getAllPhotos();
   galleryGrid.innerHTML = "";
 
   if (!photos.length) {
@@ -126,21 +161,64 @@ function renderGallery() {
     const hasDesc = photo.desc && photo.desc.trim() !== "";
     const hasDate = photo.date && photo.date.trim() !== "";
     const hasOverlay = hasDesc || hasDate;
+    const safeDesc = escapeHtml(photo.desc);
+    const safeAlt = hasDesc ? safeDesc : "Kenangan";
 
     card.innerHTML = `
       <div class="gallery-media">
-        <img src="${photo.src}" alt="${hasDesc ? photo.desc : "Kenangan"}" loading="lazy" />
-        ${hasOverlay ? `
-        <div class="gallery-overlay">
-          ${hasDesc ? `<p class="overlay-desc">${photo.desc}</p>` : ""}
-          ${hasDate ? `<span class="overlay-date">${formatDate(photo.date)}</span>` : ""}
-        </div>` : ""}
+        <img src="${escapeHtml(photo.src)}" alt="${safeAlt}" loading="lazy" />
+        ${
+          hasOverlay
+            ? `<div class="gallery-overlay">
+          ${hasDesc ? `<p class="overlay-desc">${safeDesc}</p>` : ""}
+          ${hasDate ? `<span class="overlay-date">${escapeHtml(formatDate(photo.date))}</span>` : ""}
+        </div>`
+            : ""
+        }
+        ${
+          photo.local
+            ? `<button type="button" class="btn-delete-photo" title="Hapus foto" aria-label="Hapus foto">✕</button>`
+            : ""
+        }
       </div>
     `;
+
+    const deleteBtn = card.querySelector(".btn-delete-photo");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (confirm("Hapus foto ini dari galeri?")) {
+          const list = loadLocalPhotos().filter(
+            (p) => (p.id || p.src) !== (photo.id || photo.src)
+          );
+          saveLocalPhotos(list);
+          renderGallery();
+        }
+      });
+    }
 
     card.addEventListener("click", () => openLightbox(photo));
     galleryGrid.appendChild(card);
   });
+}
+
+async function loadPermanentPhotos() {
+  try {
+    const res = await fetch("photos/data.json", { cache: "no-cache" });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      permanentPhotos = data.map((p, i) => ({
+        id: p.id || `permanent-${i}-${p.src}`,
+        src: p.src,
+        desc: p.desc || "",
+        date: p.date || "",
+        local: false,
+      }));
+    }
+  } catch (e) {
+    // folder/data.json belum ada — tidak masalah
+  }
 }
 
 // ===== Modal =====
@@ -152,6 +230,9 @@ function openAddModal() {
   addModal.classList.remove("hidden");
   addModal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
+  uploadStatus.textContent = USE_CLOUDINARY
+    ? "Foto diupload ke cloud, aman & permanen."
+    : "Foto disimpan di browser ini (localStorage).";
 }
 
 function closeAddModal() {
@@ -165,7 +246,9 @@ function closeAddModal() {
   previewImg.classList.add("hidden");
   previewPlaceholder.classList.remove("hidden");
   fileDropText.textContent = "Klik atau pilih foto";
-  uploadStatus.textContent = "Foto diupload ke cloud, aman & permanen.";
+  uploadStatus.textContent = USE_CLOUDINARY
+    ? "Foto diupload ke cloud, aman & permanen."
+    : "Foto disimpan di browser ini (localStorage).";
   addPhotoLabel.textContent = "Simpan ke Galeri";
   addPhotoBtn.disabled = false;
 }
@@ -197,6 +280,33 @@ photoInput.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
+/** Kompres gambar agar muat di localStorage */
+function compressImage(file, maxWidth = 1280, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Gagal memproses gambar"));
+    };
+    img.src = url;
+  });
+}
+
 async function uploadToCloudinary(file) {
   const formData = new FormData();
   formData.append("file", file);
@@ -209,7 +319,7 @@ async function uploadToCloudinary(file) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || "Upload gagal");
+    throw new Error(err.error?.message || "Upload cloud gagal");
   }
 
   return res.json();
@@ -226,26 +336,55 @@ async function addPhoto() {
     return;
   }
 
+  if (file.size > 8 * 1024 * 1024) {
+    alert("Ukuran foto terlalu besar (maks ~8MB). Coba pilih yang lebih kecil ya 💕");
+    return;
+  }
+
   addPhotoBtn.disabled = true;
-  addPhotoLabel.textContent = "Mengupload...";
-  uploadStatus.textContent = "Sedang upload ke cloud, tunggu sebentar ☁️";
+  addPhotoLabel.textContent = "Menyimpan...";
+  uploadStatus.textContent = USE_CLOUDINARY
+    ? "Sedang upload ke cloud, tunggu sebentar ☁️"
+    : "Sedang memproses foto...";
 
   try {
-    const result = await uploadToCloudinary(file);
-    const photos = loadPhotos();
+    let src;
+    let id;
+
+    if (USE_CLOUDINARY) {
+      try {
+        const result = await uploadToCloudinary(file);
+        src = result.secure_url;
+        id = result.public_id || "cloud-" + Date.now();
+      } catch (cloudErr) {
+        console.warn("Cloudinary gagal, fallback lokal:", cloudErr);
+        uploadStatus.textContent = "Cloud gagal, menyimpan di browser...";
+        src = await compressImage(file);
+        id = "local-" + Date.now();
+      }
+    } else {
+      src = await compressImage(file);
+      id = "local-" + Date.now();
+    }
+
+    const photos = loadLocalPhotos();
     photos.unshift({
-      id: result.public_id || "cloud-" + Date.now(),
-      src: result.secure_url,
+      id,
+      src,
       desc: photoDesc.value.trim(),
       date: photoDate.value || "",
+      local: true,
     });
-    savePhotos(photos);
+    saveLocalPhotos(photos);
     renderGallery();
     closeAddModal();
-    document.getElementById("gallery").scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("gallery").scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   } catch (err) {
     console.error(err);
-    uploadStatus.textContent = "Upload gagal: " + (err.message || "coba lagi");
+    uploadStatus.textContent = "Gagal: " + (err.message || "coba lagi");
     addPhotoLabel.textContent = "Coba Lagi";
     addPhotoBtn.disabled = false;
   }
@@ -290,7 +429,8 @@ downloadBtn.addEventListener("click", async (e) => {
   if (!currentLightboxPhoto) return;
 
   try {
-    const res = await fetch(currentLightboxPhoto.src);
+    const src = currentLightboxPhoto.src;
+    const res = await fetch(src);
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -312,4 +452,8 @@ downloadBtn.addEventListener("click", async (e) => {
   }
 });
 
-renderGallery();
+// Init
+(async function init() {
+  await loadPermanentPhotos();
+  renderGallery();
+})();
