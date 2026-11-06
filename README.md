@@ -1,41 +1,49 @@
-# 💕 Couple Website
+# 💕 Untuk Saskia Ramadani
 
-Website spesial untuk couple dengan dua tema:
+**Hadiah spesial dari Rafer**
 
-- **Tema Terang** — warna pastel lembut (pink, lavender, soft blue)
-- **Tema Gelap** — warna midnight (deep navy, purple, soft accents)
+Website couple yang dibuat khusus untuk **Saskia Ramadani**.
 
-**Tanggal Jadian:** 17 Oktober 2026
+- Tema terang: pastel vibrant (pink, ungu, cyan, gold)
+- Tema gelap: midnight vibrant
+- Tanggal jadian: **17 Oktober 2026**
 
 ## Fitur
 
-- 🎨 Toggle tema terang / gelap (disimpan di localStorage)
-- ⏳ Countdown real-time menuju 17 Oktober 2026
-- 📖 Timeline kisah cinta
-- 💌 Catatan cinta
-- 📷 Placeholder galeri foto
-- 📱 Fully responsive
+| Fitur | Keterangan |
+|-------|------------|
+| 🎨 Toggle tema | Light pastel ↔ Dark midnight |
+| ⏳ Countdown live | Menghitung hari bersama secara real-time |
+| 🎵 Musik | Play/pause background music |
+| 📷 Galeri foto | Tambah foto + deskripsi + tanggal (tersimpan di browser) |
+| 🔍 Lightbox | Klik foto untuk lihat lebih besar |
+| ✨ Sticker & logo | Dekorasi aesthetic di seluruh halaman |
+| 📱 Responsive | Nyaman di HP & desktop |
 
-## Cara Menjalankan
+## Cara pakai Galeri
 
-Cukup buka `index.html` di browser, atau gunakan Live Server.
+1. Pilih foto dari HP/laptop
+2. Isi deskripsi (opsional)
+3. Pilih tanggal (opsional)
+4. Klik **Tambahkan ke Galeri**
 
-### GitHub Pages
+Foto disimpan di `localStorage` browser. Kalau mau permanen, upload file foto ke folder repo lalu edit array di `script.js`.
 
-1. Pergi ke **Settings → Pages**
+## Ganti Musik
+
+Di `index.html`, cari tag `<audio>` dan ganti `src` dengan link MP3 lagu favorit kalian (bisa dari hosting sendiri atau link langsung).
+
+## Deploy GitHub Pages
+
+1. Repo → **Settings** → **Pages**
 2. Source: Deploy from a branch
 3. Branch: `main` / root
 4. Save
 
-Website akan tersedia di:  
-`https://kingrafer.github.io/couple-website/`
-
-## Kustomisasi
-
-- Ganti nama di `index.html` (bagian hero: "Kamu" & "Aku")
-- Tambahkan foto di section Gallery
-- Edit teks kisah dan catatan cinta sesuai keinginan
+Live di: `https://kingrafer.github.io/couple-website/`
 
 ---
 
-Made with 💖 | 17.10.2026
+Dibuat dengan 💖 oleh **Rafer**  
+Khusus untuk **Saskia Ramadani**  
+17.10.2026 — Forever
