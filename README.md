@@ -21,29 +21,31 @@ Website couple yang dibuat khusus untuk **Saskia Ramadani**.
 | ✨ Sticker & logo | Dekorasi aesthetic di seluruh halaman |
 | 📱 Responsive | Nyaman di HP & desktop |
 
-## Galeri foto lintas perangkat (Supabase)
+## Galeri foto lintas perangkat (GitHub + Vercel)
 
-Galeri menggunakan Supabase Storage untuk file foto dan tabel database untuk metadata. Foto yang berhasil diunggah akan tampil di semua perangkat yang membuka website, bukan hanya browser pengunggah.
+Foto yang diunggah disimpan langsung di repository GitHub pada folder `photos/uploads/`. Endpoint `api/gallery.js` menjadi perantara agar token GitHub tidak pernah dikirim ke browser.
 
-### Pengaturan satu kali
+### Pengaturan Vercel satu kali
 
-1. Buat project Supabase dan tunggu sampai project siap.
-2. Buka **SQL Editor**, salin seluruh isi file `supabase-setup.sql`, lalu jalankan.
-3. Buka **Authentication → Users** dan buat satu akun email/password khusus pengelola galeri. Jangan aktifkan pendaftaran publik jika hanya pengelola yang boleh mengunggah.
-4. Buka **Project Settings → API**. Salin **Project URL** dan **anon/public key**.
-5. Buka `cloud-gallery.js` di GitHub. Ganti `ISI_SUPABASE_PROJECT_URL` dan `ISI_SUPABASE_ANON_KEY` dengan nilai project milikmu.
-6. Simpan perubahan. Jika Vercel terhubung ke GitHub, tunggu deployment selesai.
+1. Buat GitHub Personal Access Token (Fine-grained) khusus untuk repository ini.
+2. Beri izin **Contents: Read and write** saja.
+3. Di Vercel, buka project → **Settings → Environment Variables**.
+4. Tambahkan:
+   - `GITHUB_TOKEN` = token GitHub (rahasia)
+   - `GITHUB_OWNER` = `KingRafer`
+   - `GITHUB_REPO` = `for-mykia`
+   - `GITHUB_BRANCH` = `main`
+5. Pilih environment Production, simpan, lalu lakukan Redeploy.
 
-**Penting:** gunakan hanya anon/public key di frontend. Jangan pernah memasukkan `service_role` key atau password akun ke dalam file website.
+**Jangan pernah menaruh GITHUB_TOKEN di file HTML/JS, repository, atau membagikannya lewat chat.** Jika token pernah terlanjur dibagikan, revoke dan buat token baru.
 
 ### Cara menggunakan
 
-1. Buka website dan masuk menggunakan akun pengelola.
-2. Pilih foto (maksimal 5 MB), isi cerita/tanggal bila perlu, lalu tekan **Upload ke Galeri**.
-3. Pengunjung lain dapat melihat foto tanpa login. Untuk mengunggah, perlu akun pengelola.
-4. Perangkat yang sedang membuka website akan menerima pembaruan galeri otomatis; perangkat lain akan memuat foto terbaru saat halaman dibuka atau dimuat ulang.
+1. Buka website dan pilih foto (maksimal 3 MB; JPG, PNG, WEBP, atau GIF).
+2. Isi cerita/tanggal bila perlu, lalu tekan **Upload ke Galeri**.
+3. Foto dan metadata disimpan di folder `photos/uploads/` dan akan tampil pada perangkat lain.
 
-File foto lama yang hanya ada di folder browser/localStorage tidak otomatis dipindahkan ke cloud. Unggah ulang foto tersebut setelah konfigurasi selesai, atau tambahkan secara manual ke bucket dan tabel Supabase.
+Catatan: form ini terbuka untuk siapa pun yang mengunjungi website. Setiap upload membuat commit baru di repository, jadi batasi ukuran foto dan pantau penggunaan repository.
 
 ## Ganti Musik
 
