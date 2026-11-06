@@ -17,15 +17,14 @@
       <span class="icon-sun">☀️</span>
       <span class="icon-moon">🌙</span>
     </button>
-    <button id="music-toggle" class="control-btn" aria-label="Play/Pause musik" title="Musik">
+    <button id="music-toggle" class="control-btn" aria-label="Play/Pause musik" title="I Wanna Be Yours">
       <span id="music-icon">🎵</span>
     </button>
   </div>
 
-  <!-- Audio -->
-  <audio id="bg-music" loop preload="none">
-    <!-- Ganti src dengan lagu favorit kalian (MP3). Contoh: lagu romantic royalty-free -->
-    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+  <!-- Audio: I Wanna Be Yours - Arctic Monkeys -->
+  <audio id="bg-music" loop preload="metadata">
+    <source src="https://archive.org/download/arctic-monkeys-i-wanna-be-yours/Arctic%20Monkeys%20-%20I%20Wanna%20Be%20Yours.mp3" type="audio/mpeg" />
   </audio>
 
   <!-- Hero -->
@@ -168,36 +167,20 @@
     </div>
   </section>
 
-  <!-- Gallery -->
+  <!-- Gallery (clean, no form) -->
   <section class="gallery-section" id="gallery">
     <div class="container">
       <div class="section-header">
         <span class="section-logo">📷</span>
         <h2 class="section-title">Galeri Kenangan</h2>
-        <p class="section-desc">Foto-foto indah kita. Bisa tambah deskripsi & tanggal.</p>
+        <p class="section-desc">Kumpulan momen indah kita</p>
       </div>
 
-      <!-- Add Photo Form -->
-      <div class="add-photo-box">
-        <h3><span class="mini-logo">➕</span> Tambah Foto Baru</h3>
-        <div class="add-photo-form">
-          <div class="form-row">
-            <label>Pilih Foto</label>
-            <input type="file" id="photo-input" accept="image/*" />
-          </div>
-          <div class="form-row">
-            <label>Judul / Deskripsi (opsional)</label>
-            <input type="text" id="photo-desc" placeholder="Contoh: Jalan-jalan di pantai..." />
-          </div>
-          <div class="form-row">
-            <label>Tanggal (opsional)</label>
-            <input type="date" id="photo-date" />
-          </div>
-          <button type="button" id="add-photo-btn" class="btn-primary">
-            <span>Tambahkan ke Galeri</span>
-          </button>
-        </div>
-        <p class="form-hint">Foto disimpan di browser ini saja (local). Untuk permanen, upload ke repo atau hosting.</p>
+      <div class="gallery-actions">
+        <button type="button" id="open-add-modal" class="btn-add-memory">
+          <span class="btn-icon">✨</span>
+          <span>Tambah Kenangan Baru</span>
+        </button>
       </div>
 
       <div class="gallery-grid" id="gallery-grid">
@@ -213,8 +196,58 @@
       <p class="footer-heart">Dibuat dengan cinta oleh <strong>Rafer</strong></p>
       <p class="footer-for">Khusus untuk <strong>Saskia Ramadani</strong></p>
       <p class="footer-date">17.10.2026 — Forever & Always</p>
+      <p class="footer-song">♪ Now playing: <em>I Wanna Be Yours</em> — Arctic Monkeys</p>
     </div>
   </footer>
+
+  <!-- ========== MODAL: Tambah Foto (terpisah & aesthetic) ========== -->
+  <div id="add-modal" class="modal-overlay hidden" aria-hidden="true">
+    <div class="modal-card">
+      <button type="button" class="modal-close" id="close-add-modal" aria-label="Tutup">✕</button>
+
+      <div class="modal-header">
+        <span class="modal-logo">🌸</span>
+        <h2>Tambah Kenangan</h2>
+        <p>Simpan momen spesial kita di sini</p>
+      </div>
+
+      <div class="modal-body">
+        <!-- Preview area -->
+        <div class="photo-preview-wrap" id="preview-wrap">
+          <div class="photo-preview-placeholder" id="preview-placeholder">
+            <span class="preview-icon">📷</span>
+            <span>Pilih foto untuk preview</span>
+          </div>
+          <img id="preview-img" class="photo-preview-img hidden" alt="Preview" />
+        </div>
+
+        <div class="form-group">
+          <label for="photo-input">Foto</label>
+          <label class="file-drop" for="photo-input">
+            <span class="file-drop-text">Klik atau tarik foto ke sini</span>
+            <input type="file" id="photo-input" accept="image/*" hidden />
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="photo-desc">Deskripsi <span class="optional">(opsional)</span></label>
+          <input type="text" id="photo-desc" placeholder="Contoh: Jalan sore di pantai..." maxlength="120" />
+        </div>
+
+        <div class="form-group">
+          <label for="photo-date">Tanggal <span class="optional">(opsional)</span></label>
+          <input type="date" id="photo-date" />
+        </div>
+
+        <button type="button" id="add-photo-btn" class="btn-submit">
+          <span>Simpan ke Galeri</span>
+          <span class="btn-heart">💕</span>
+        </button>
+
+        <p class="modal-hint">Foto tersimpan di browser ini. Aman & pribadi.</p>
+      </div>
+    </div>
+  </div>
 
   <!-- Lightbox -->
   <div id="lightbox" class="lightbox hidden">
