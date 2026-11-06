@@ -1,3 +1,8 @@
+// ===== Cloudinary =====
+const CLOUD_NAME = "djpavitu";
+const UPLOAD_PRESET = "124d502204e3ad7";
+const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+
 // ===== Theme Toggle =====
 const themeToggle = document.getElementById("theme-toggle");
 const body = document.body;
@@ -69,8 +74,30 @@ function updateCountdown() {
 updateCountdown();
 setInterval(updateCountdown, 1000);
 
-// ===== Gallery dari folder repo: photos/data.json =====
+// ===== Gallery (Cloudinary URLs + localStorage list) =====
+const STORAGE_KEY = "saskia_gallery_photos";
 const galleryGrid = document.getElementById("gallery-grid");
+const photoInput = document.getElementById("photo-input");
+const photoDesc = document.getElementById("photo-desc");
+const photoDate = document.getElementById("photo-date");
+const addPhotoBtn = document.getElementById("add-photo-btn");
+const addPhotoLabel = document.getElementById("add-photo-label");
+const uploadStatus = document.getElementById("upload-status");
+const previewImg = document.getElementById("preview-img");
+const previewPlaceholder = document.getElementById("preview-placeholder");
+const fileDropText = document.getElementById("file-drop-text");
+
+function loadPhotos() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  return [];
+}
+
+function savePhotos(photos) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -82,12 +109,13 @@ function formatDate(dateStr) {
   });
 }
 
-function renderGallery(photos) {
+function renderGallery() {
+  const photos = loadPhotos();
   galleryGrid.innerHTML = "";
 
-  if (!photos || photos.length === 0) {
+  if (!photos.length) {
     galleryGrid.innerHTML =
-      `<div class="gallery-empty">Belum ada foto. Klik "Cara Tambah Foto" untuk menambah kenangan 📷💕</div>`;
+      `<div class="gallery-empty">Belum ada foto. Yuk tambahkan kenangan pertama! 📷💕</div>`;
     return;
   }
 
@@ -115,21 +143,7 @@ function renderGallery(photos) {
   });
 }
 
-async function loadGallery() {
-  try {
-    // cache-bust supaya update data.json cepat kelihatan
-    const res = await fetch("photos/data.json?t=" + Date.now());
-    if (!res.ok) throw new Error("Gagal load data.json");
-    const photos = await res.json();
-    renderGallery(photos);
-  } catch (err) {
-    console.error(err);
-    galleryGrid.innerHTML =
-      `<div class="gallery-empty">Gagal memuat galeri. Cek file photos/data.json</div>`;
-  }
-}
-
-// ===== Modal howto =====
+// ===== Modal =====
 const addModal = document.getElementById("add-modal");
 const openAddModalBtn = document.getElementById("open-add-modal");
 const closeAddModalBtn = document.getElementById("close-add-modal");
@@ -144,6 +158,16 @@ function closeAddModal() {
   addModal.classList.add("hidden");
   addModal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
+  photoInput.value = "";
+  photoDesc.value = "";
+  photoDate.value = "";
+  previewImg.src = "";
+  previewImg.classList.add("hidden");
+  previewPlaceholder.classList.remove("hidden");
+  fileDropText.textContent = "Klik atau pilih foto";
+  uploadStatus.textContent = "Foto diupload ke cloud, aman & permanen.";
+  addPhotoLabel.textContent = "Simpan ke Galeri";
+  addPhotoBtn.disabled = false;
 }
 
 openAddModalBtn.addEventListener("click", openAddModal);
@@ -158,6 +182,76 @@ document.addEventListener("keydown", (e) => {
     closeLightbox();
   }
 });
+
+photoInput.addEventListener("change", () => {
+  const file = photoInput.files[0];
+  if (!file || !file.type.startsWith("image/")) return;
+
+  fileDropText.textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewImg.src = e.target.result;
+    previewImg.classList.remove("hidden");
+    previewPlaceholder.classList.add("hidden");
+  };
+  reader.readAsDataURL(file);
+});
+
+async function uploadToCloudinary(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  const res = await fetch(CLOUDINARY_URL, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || "Upload gagal");
+  }
+
+  return res.json();
+}
+
+async function addPhoto() {
+  const file = photoInput.files[0];
+  if (!file) {
+    alert("Pilih foto dulu ya 💕");
+    return;
+  }
+  if (!file.type.startsWith("image/")) {
+    alert("File harus berupa gambar!");
+    return;
+  }
+
+  addPhotoBtn.disabled = true;
+  addPhotoLabel.textContent = "Mengupload...";
+  uploadStatus.textContent = "Sedang upload ke cloud, tunggu sebentar ☁️";
+
+  try {
+    const result = await uploadToCloudinary(file);
+    const photos = loadPhotos();
+    photos.unshift({
+      id: result.public_id || "cloud-" + Date.now(),
+      src: result.secure_url,
+      desc: photoDesc.value.trim(),
+      date: photoDate.value || "",
+    });
+    savePhotos(photos);
+    renderGallery();
+    closeAddModal();
+    document.getElementById("gallery").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    console.error(err);
+    uploadStatus.textContent = "Upload gagal: " + (err.message || "coba lagi");
+    addPhotoLabel.textContent = "Coba Lagi";
+    addPhotoBtn.disabled = false;
+  }
+}
+
+addPhotoBtn.addEventListener("click", addPhoto);
 
 // ===== Lightbox + Download =====
 const lightbox = document.getElementById("lightbox");
@@ -204,20 +298,18 @@ downloadBtn.addEventListener("click", async (e) => {
     const name = currentLightboxPhoto.desc
       ? currentLightboxPhoto.desc.replace(/[^a-z0-9]/gi, "_").slice(0, 40)
       : "kenangan";
-    const ext = (currentLightboxPhoto.src.split(".").pop() || "jpg").split("?")[0];
-    link.download = `${name || "foto"}.${ext}`;
+    link.download = `${name || "foto"}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   } catch (err) {
-    // fallback
     const link = document.createElement("a");
     link.href = currentLightboxPhoto.src;
-    link.download = "foto.jpg";
     link.target = "_blank";
+    link.download = "foto.jpg";
     link.click();
   }
 });
 
-loadGallery();
+renderGallery();
