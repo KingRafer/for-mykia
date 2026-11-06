@@ -127,16 +127,18 @@ function renderGallery() {
 
     const hasDesc = photo.desc && photo.desc.trim() !== "";
     const hasDate = photo.date && photo.date.trim() !== "";
+    const hasOverlay = hasDesc || hasDate;
 
+    // Teks langsung ditimpa di atas foto
     card.innerHTML = `
-      <div class="gallery-img-wrap">
+      <div class="gallery-media">
         <img src="${photo.src}" alt="${hasDesc ? photo.desc : "Kenangan"}" loading="lazy" />
+        ${hasOverlay ? `
+        <div class="gallery-overlay">
+          ${hasDesc ? `<p class="overlay-desc">${photo.desc}</p>` : ""}
+          ${hasDate ? `<span class="overlay-date">${formatDate(photo.date)}</span>` : ""}
+        </div>` : ""}
       </div>
-      ${hasDesc || hasDate ? `
-      <div class="gallery-card-info">
-        ${hasDesc ? `<p class="gallery-card-desc">${photo.desc}</p>` : ""}
-        ${hasDate ? `<span class="gallery-card-date">${formatDate(photo.date)}</span>` : ""}
-      </div>` : ""}
     `;
 
     card.addEventListener("click", () => openLightbox(photo));
@@ -183,7 +185,6 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Preview when file selected
 photoInput.addEventListener("change", () => {
   const file = photoInput.files[0];
   if (!file || !file.type.startsWith("image/")) return;
@@ -212,12 +213,12 @@ function addPhoto() {
   const reader = new FileReader();
   reader.onload = (e) => {
     const photos = loadPhotos();
-    const descValue = photoDesc.value.trim(); // boleh kosong
+    const descValue = photoDesc.value.trim();
 
     photos.unshift({
       id: "local-" + Date.now(),
       src: e.target.result,
-      desc: descValue, // kosong jika tidak diisi
+      desc: descValue,
       date: photoDate.value || "",
     });
     savePhotos(photos);
@@ -263,7 +264,6 @@ lightbox.addEventListener("click", (e) => {
   if (e.target === lightbox) closeLightbox();
 });
 
-// Download foto (kerja di HP & laptop)
 downloadBtn.addEventListener("click", (e) => {
   e.stopPropagation();
   if (!currentLightboxPhoto) return;
@@ -279,5 +279,4 @@ downloadBtn.addEventListener("click", (e) => {
   document.body.removeChild(link);
 });
 
-// Init
 renderGallery();
