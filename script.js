@@ -30,17 +30,17 @@ musicToggle.addEventListener("click", async () => {
   try {
     if (isPlaying) {
       bgMusic.pause();
-      musicIcon.textContent = "🎵";
+      musicIcon.textContent = "\uD83C\uDFB5";
       musicToggle.classList.remove("playing");
       isPlaying = false;
     } else {
       await bgMusic.play();
-      musicIcon.textContent = "🎶";
+      musicIcon.textContent = "\uD83C\uDFB6";
       musicToggle.classList.add("playing");
       isPlaying = true;
     }
   } catch (err) {
-    alert("Klik sekali lagi untuk memutar musik ya 💕");
+    alert("Klik sekali lagi untuk memutar musik ya \uD83D\uDC95");
   }
 });
 
@@ -69,11 +69,11 @@ function updateCountdown() {
 
   const statusEl = document.getElementById("anniversary-status");
   if (distance < 0) {
-    statusEl.textContent = "Menuju 17 Oktober 2026 💕";
+    statusEl.textContent = "Menuju 17 Oktober 2026 \uD83D\uDC95";
   } else if (days === 0) {
-    statusEl.textContent = "Hari ini hari jadian kita! 🎉💕";
+    statusEl.textContent = "Hari ini hari jadian kita! \uD83C\uDF89\uD83D\uDC95";
   } else {
-    statusEl.textContent = `Sudah ${days} hari bersama Saskia 💕`;
+    statusEl.textContent = "Sudah " + days + " hari bersama Saskia \uD83D\uDC95";
   }
 }
 
@@ -98,10 +98,10 @@ let permanentPhotos = [];
 function escapeHtml(str) {
   if (!str) return "";
   return String(str)
-    .replace(/&/g, "&")
-    .replace(/</g, "<")
-    .replace(/>/g, ">")
-    .replace(/"/g, """)
+    .replace(/&/g, "&" + "amp;")
+    .replace(/</g, "&" + "lt;")
+    .replace(/>/g, "&" + "gt;")
+    .replace(/"/g, "&" + "quot;")
     .replace(/'/g, "&#39;");
 }
 
@@ -149,7 +149,7 @@ function renderGallery() {
 
   if (!photos.length) {
     galleryGrid.innerHTML =
-      `<div class="gallery-empty">Belum ada foto. Yuk tambahkan kenangan pertama! 📷💕</div>`;
+      '<div class="gallery-empty">Belum ada foto. Yuk tambahkan kenangan pertama! \uD83D\uDCF7\uD83D\uDC95</div>';
     return;
   }
 
@@ -163,24 +163,24 @@ function renderGallery() {
     const safeDesc = escapeHtml(photo.desc);
     const safeAlt = hasDesc ? safeDesc : "Kenangan";
 
-    card.innerHTML = `
-      <div class="gallery-media">
-        <img src="${escapeHtml(photo.src)}" alt="${safeAlt}" loading="lazy" />
-        ${
-          hasOverlay
-            ? `<div class="gallery-overlay">
-          ${hasDesc ? `<p class="overlay-desc">${safeDesc}</p>` : ""}
-          ${hasDate ? `<span class="overlay-date">${escapeHtml(formatDate(photo.date))}</span>` : ""}
-        </div>`
-            : ""
-        }
-        ${
-          photo.local
-            ? `<button type="button" class="btn-delete-photo" title="Hapus foto" aria-label="Hapus foto">✕</button>`
-            : ""
-        }
-      </div>
-    `;
+    let overlay = "";
+    if (hasOverlay) {
+      overlay = '<div class="gallery-overlay">';
+      if (hasDesc) overlay += '<p class="overlay-desc">' + safeDesc + '</p>';
+      if (hasDate) overlay += '<span class="overlay-date">' + escapeHtml(formatDate(photo.date)) + '</span>';
+      overlay += '</div>';
+    }
+
+    const delBtn = photo.local
+      ? '<button type="button" class="btn-delete-photo" title="Hapus foto" aria-label="Hapus foto">\u2715</button>'
+      : "";
+
+    card.innerHTML =
+      '<div class="gallery-media">' +
+      '<img src="' + escapeHtml(photo.src) + '" alt="' + safeAlt + '" loading="lazy" />' +
+      overlay +
+      delBtn +
+      '</div>';
 
     const deleteBtn = card.querySelector(".btn-delete-photo");
     if (deleteBtn) {
@@ -208,16 +208,14 @@ async function loadPermanentPhotos() {
     const data = await res.json();
     if (Array.isArray(data)) {
       permanentPhotos = data.map((p, i) => ({
-        id: p.id || `permanent-${i}-${p.src}`,
+        id: p.id || ("permanent-" + i + "-" + p.src),
         src: p.src,
         desc: p.desc || "",
         date: p.date || "",
         local: false,
       }));
     }
-  } catch (e) {
-    // folder/data.json belum ada — tidak masalah
-  }
+  } catch (e) {}
 }
 
 // ===== Modal =====
@@ -279,14 +277,16 @@ photoInput.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
-/** Kompres gambar agar muat di localStorage (fallback) */
-function compressImage(file, maxWidth = 1280, quality = 0.82) {
-  return new Promise((resolve, reject) => {
+function compressImage(file, maxWidth, quality) {
+  maxWidth = maxWidth || 1280;
+  quality = quality || 0.82;
+  return new Promise(function (resolve, reject) {
     const img = new Image();
     const url = URL.createObjectURL(file);
-    img.onload = () => {
+    img.onload = function () {
       URL.revokeObjectURL(url);
-      let { width, height } = img;
+      var width = img.width;
+      var height = img.height;
       if (width > maxWidth) {
         height = Math.round((height * maxWidth) / width);
         width = maxWidth;
@@ -298,7 +298,7 @@ function compressImage(file, maxWidth = 1280, quality = 0.82) {
       ctx.drawImage(img, 0, 0, width, height);
       resolve(canvas.toDataURL("image/jpeg", quality));
     };
-    img.onerror = () => {
+    img.onerror = function () {
       URL.revokeObjectURL(url);
       reject(new Error("Gagal memproses gambar"));
     };
@@ -317,8 +317,8 @@ async function uploadToCloudinary(file) {
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || "Upload cloud gagal");
+    const err = await res.json().catch(function () { return {}; });
+    throw new Error((err.error && err.error.message) || "Upload cloud gagal");
   }
 
   return res.json();
@@ -327,7 +327,7 @@ async function uploadToCloudinary(file) {
 async function addPhoto() {
   const file = photoInput.files[0];
   if (!file) {
-    alert("Pilih foto dulu ya 💕");
+    alert("Pilih foto dulu ya \uD83D\uDC95");
     return;
   }
   if (!file.type.startsWith("image/")) {
@@ -336,23 +336,23 @@ async function addPhoto() {
   }
 
   if (file.size > 8 * 1024 * 1024) {
-    alert("Ukuran foto terlalu besar (maks ~8MB). Coba pilih yang lebih kecil ya 💕");
+    alert("Ukuran foto terlalu besar (maks ~8MB). Coba pilih yang lebih kecil ya \uD83D\uDC95");
     return;
   }
 
   addPhotoBtn.disabled = true;
   addPhotoLabel.textContent = "Mengupload...";
-  uploadStatus.textContent = "Sedang upload ke cloud, tunggu sebentar ☁️";
+  uploadStatus.textContent = "Sedang upload ke cloud, tunggu sebentar \u2601\uFE0F";
 
   try {
-    let src;
-    let id;
+    var src;
+    var id;
 
     if (USE_CLOUDINARY) {
       try {
         const result = await uploadToCloudinary(file);
         src = result.secure_url;
-        id = result.public_id || "cloud-" + Date.now();
+        id = result.public_id || ("cloud-" + Date.now());
       } catch (cloudErr) {
         console.warn("Cloudinary gagal, fallback lokal:", cloudErr);
         uploadStatus.textContent = "Cloud gagal, menyimpan di browser...";
@@ -366,8 +366,8 @@ async function addPhoto() {
 
     const photos = loadLocalPhotos();
     photos.unshift({
-      id,
-      src,
+      id: id,
+      src: src,
       desc: photoDesc.value.trim(),
       date: photoDate.value || "",
       local: !String(src).startsWith("https://res.cloudinary.com"),
@@ -435,7 +435,7 @@ downloadBtn.addEventListener("click", async (e) => {
     const name = currentLightboxPhoto.desc
       ? currentLightboxPhoto.desc.replace(/[^a-z0-9]/gi, "_").slice(0, 40)
       : "kenangan";
-    link.download = `${name || "foto"}.jpg`;
+    link.download = (name || "foto") + ".jpg";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
