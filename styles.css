@@ -367,71 +367,14 @@ section { padding: 4.5rem 0; }
   font-weight: 500;
 }
 
-/* ===== Timeline ===== */
-.timeline {
-  position: relative;
-  max-width: 580px;
-  margin: 0 auto;
-  padding-left: 2rem;
-}
-
-.timeline::before {
-  content: "";
-  position: absolute;
-  left: 7px;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(to bottom, var(--accent), var(--accent-2));
-  border-radius: 3px;
-}
-
-.timeline-item {
-  position: relative;
-  margin-bottom: 2.3rem;
-}
-
-.timeline-item:last-child { margin-bottom: 0; }
-
-.timeline-dot {
-  position: absolute;
-  left: -2rem;
-  top: 5px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  border: 3px solid var(--bg-primary);
-  box-shadow: 0 0 0 4px var(--accent-soft);
-}
-
-.timeline-content h3 {
-  font-family: "Playfair Display", serif;
-  font-size: 1.2rem;
-  margin-bottom: 0.3rem;
-}
-
-.timeline-content p {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-}
-
-.highlight-date {
-  color: var(--accent) !important;
-  font-weight: 600;
-  font-size: 1.05rem !important;
-  margin-bottom: 0.2rem;
-}
-
-/* ===== Notes ===== */
+/* ===== Notes (single) ===== */
 .notes-section {
   background: var(--bg-secondary);
 }
 
-.notes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 1.15rem;
+.note-single {
+  display: flex;
+  justify-content: center;
 }
 
 .note-card {
@@ -444,28 +387,34 @@ section { padding: 4.5rem 0; }
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.note-card-single {
+  max-width: 420px;
+  width: 100%;
+  padding: 2rem 1.8rem;
+}
+
 .note-card:hover {
   transform: translateY(-7px);
   box-shadow: 0 14px 36px var(--shadow);
 }
 
 .note-icon {
-  font-size: 1.9rem;
-  margin-bottom: 0.7rem;
+  font-size: 2.2rem;
+  margin-bottom: 0.9rem;
   display: inline-block;
   animation: float 3.5s ease-in-out infinite;
 }
 
 .note-card p {
-  font-size: 0.93rem;
+  font-size: 1.15rem;
   color: var(--text-secondary);
   font-style: italic;
-  line-height: 1.55;
-  margin-bottom: 0.7rem;
+  line-height: 1.6;
+  margin-bottom: 0.9rem;
 }
 
 .note-from {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   color: var(--accent);
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -522,16 +471,29 @@ section { padding: 4.5rem 0; }
   box-shadow: var(--card-glow);
   transition: transform 0.3s ease;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
 }
 
 .gallery-card:hover {
   transform: translateY(-6px) scale(1.02);
 }
 
-.gallery-card img {
+/* Foto menyesuaikan rasio asli, tidak dipaksa crop keras */
+.gallery-img-wrap {
   width: 100%;
   aspect-ratio: 1;
-  object-fit: cover;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.gallery-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* tampilkan foto utuh sesuai aslinya */
   display: block;
 }
 
@@ -563,7 +525,7 @@ section { padding: 4.5rem 0; }
   font-size: 0.95rem;
 }
 
-/* ===== Modal Tambah Foto (Aesthetic) ===== */
+/* ===== Modal Tambah Foto ===== */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -587,11 +549,12 @@ section { padding: 4.5rem 0; }
   position: relative;
   width: 100%;
   max-width: 420px;
+  max-height: 92vh;
+  overflow-y: auto;
   background: var(--bg-card);
   border: 2px solid var(--border);
   border-radius: 24px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  overflow: hidden;
   animation: modalIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -656,7 +619,6 @@ section { padding: 4.5rem 0; }
   padding: 0.5rem 1.5rem 1.8rem;
 }
 
-/* Preview */
 .photo-preview-wrap {
   width: 100%;
   aspect-ratio: 16 / 10;
@@ -687,7 +649,7 @@ section { padding: 4.5rem 0; }
 .photo-preview-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* preview juga utuh */
 }
 
 .photo-preview-img.hidden,
@@ -695,7 +657,6 @@ section { padding: 4.5rem 0; }
   display: none;
 }
 
-/* Form groups */
 .form-group {
   margin-bottom: 1rem;
 }
@@ -793,7 +754,7 @@ section { padding: 4.5rem 0; }
   opacity: 0.8;
 }
 
-/* ===== Lightbox ===== */
+/* ===== Lightbox + Download ===== */
 .lightbox {
   position: fixed;
   inset: 0;
@@ -815,7 +776,7 @@ section { padding: 4.5rem 0; }
 
 .lightbox img {
   max-width: min(90vw, 700px);
-  max-height: 70vh;
+  max-height: 65vh;
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
   object-fit: contain;
@@ -844,17 +805,44 @@ section { padding: 4.5rem 0; }
   margin-top: 1rem;
   text-align: center;
   color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .lightbox-info p {
   font-size: 1.05rem;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0;
 }
 
 .lightbox-info span {
   font-size: 0.85rem;
   opacity: 0.8;
   color: #f9a8d4;
+}
+
+.btn-download {
+  margin-top: 0.6rem;
+  padding: 0.6rem 1.3rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff6b9d, #a78bfa);
+  color: white;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 6px 20px rgba(255, 107, 157, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-download:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(255, 107, 157, 0.45);
 }
 
 /* ===== Footer ===== */
@@ -905,7 +893,7 @@ section { padding: 4.5rem 0; }
   font-weight: 500;
 }
 
-/* ===== Responsive ===== */
+/* ===== Responsive (HP + Laptop) ===== */
 @media (max-width: 600px) {
   .countdown-item {
     min-width: 68px;
@@ -928,5 +916,11 @@ section { padding: 4.5rem 0; }
   .modal-card {
     max-width: 100%;
     border-radius: 20px;
+  }
+  .note-card p {
+    font-size: 1.05rem;
+  }
+  .lightbox img {
+    max-height: 55vh;
   }
 }
