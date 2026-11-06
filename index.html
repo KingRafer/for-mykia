@@ -11,7 +11,6 @@
 </head>
 <body class="light">
 
-  <!-- Floating Controls -->
   <div class="floating-controls">
     <button id="theme-toggle" class="control-btn" aria-label="Ganti tema" title="Ganti tema">
       <span class="icon-sun">☀️</span>
@@ -22,12 +21,10 @@
     </button>
   </div>
 
-  <!-- Audio: I Wanna Be Yours - Arctic Monkeys -->
   <audio id="bg-music" loop preload="metadata">
     <source src="https://archive.org/download/arctic-monkeys-i-wanna-be-yours/Arctic%20Monkeys%20-%20I%20Wanna%20Be%20Yours.mp3" type="audio/mpeg" />
   </audio>
 
-  <!-- Hero -->
   <section class="hero">
     <div class="hero-decor">
       <span class="sticker s1">💖</span>
@@ -67,7 +64,6 @@
     </div>
   </section>
 
-  <!-- Countdown -->
   <section class="countdown-section" id="countdown">
     <div class="container">
       <div class="section-header">
@@ -99,7 +95,6 @@
     </div>
   </section>
 
-  <!-- Love Notes — hanya 1 -->
   <section class="notes-section" id="notes">
     <div class="container">
       <div class="section-header">
@@ -117,7 +112,6 @@
     </div>
   </section>
 
-  <!-- Gallery -->
   <section class="gallery-section" id="gallery">
     <div class="container">
       <div class="section-header">
@@ -129,17 +123,14 @@
       <div class="gallery-actions">
         <button type="button" id="open-add-modal" class="btn-add-memory">
           <span class="btn-icon">✨</span>
-          <span>Tambah Kenangan Baru</span>
+          <span>Cara Tambah Foto</span>
         </button>
       </div>
 
-      <div class="gallery-grid" id="gallery-grid">
-        <!-- Photos rendered by JS -->
-      </div>
+      <div class="gallery-grid" id="gallery-grid"></div>
     </div>
   </section>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <div class="footer-logo">💕</div>
@@ -150,55 +141,44 @@
     </div>
   </footer>
 
-  <!-- Modal Tambah Foto -->
+  <!-- Modal: cara tambah foto ke folder repo -->
   <div id="add-modal" class="modal-overlay hidden" aria-hidden="true">
     <div class="modal-card">
       <button type="button" class="modal-close" id="close-add-modal" aria-label="Tutup">✕</button>
 
       <div class="modal-header">
-        <span class="modal-logo">🌸</span>
-        <h2>Tambah Kenangan</h2>
-        <p>Simpan momen spesial kita di sini</p>
+        <span class="modal-logo">📁</span>
+        <h2>Tambah Foto ke Galeri</h2>
+        <p>Foto disimpan permanen di folder repo</p>
       </div>
 
-      <div class="modal-body">
-        <div class="photo-preview-wrap" id="preview-wrap">
-          <div class="photo-preview-placeholder" id="preview-placeholder">
-            <span class="preview-icon">📷</span>
-            <span>Pilih foto untuk preview</span>
-          </div>
-          <img id="preview-img" class="photo-preview-img hidden" alt="Preview" />
-        </div>
-
-        <div class="form-group">
-          <label for="photo-input">Foto</label>
-          <label class="file-drop" for="photo-input">
-            <span class="file-drop-text">Klik atau tarik foto ke sini</span>
-            <input type="file" id="photo-input" accept="image/*" hidden />
-          </label>
-        </div>
-
-        <div class="form-group">
-          <label for="photo-desc">Deskripsi <span class="optional">(opsional)</span></label>
-          <input type="text" id="photo-desc" placeholder="Boleh dikosongkan..." maxlength="120" />
-        </div>
-
-        <div class="form-group">
-          <label for="photo-date">Tanggal <span class="optional">(opsional)</span></label>
-          <input type="date" id="photo-date" />
-        </div>
-
-        <button type="button" id="add-photo-btn" class="btn-submit">
-          <span>Simpan ke Galeri</span>
-          <span class="btn-heart">💕</span>
-        </button>
-
-        <p class="modal-hint">Foto tersimpan di browser ini. Aman & pribadi.</p>
+      <div class="modal-body modal-howto">
+        <ol class="howto-steps">
+          <li>
+            <strong>Upload foto</strong><br />
+            Ke folder <code>photos/</code> di GitHub<br />
+            <a href="https://github.com/KingRafer/couple-website/tree/main/photos" target="_blank" rel="noopener">Buka folder photos →</a>
+          </li>
+          <li>
+            <strong>Edit <code>data.json</code></strong><br />
+            Tambahkan entri seperti ini:
+            <pre class="code-block">{
+  "src": "photos/nama-file.jpg",
+  "desc": "",
+  "date": "2026-10-17"
+}</pre>
+            <span class="howto-note"><code>desc</code> & <code>date</code> boleh dikosongkan</span>
+          </li>
+          <li>
+            <strong>Commit & push</strong><br />
+            Vercel akan update otomatis dalam 1–2 menit
+          </li>
+        </ol>
+        <p class="modal-hint">Atau kirim fotonya ke Rafer, nanti diupload ke repo 💕</p>
       </div>
     </div>
   </div>
 
-  <!-- Lightbox + Download -->
   <div id="lightbox" class="lightbox hidden">
     <button class="lightbox-close" id="lightbox-close">✕</button>
     <img id="lightbox-img" src="" alt="" />
