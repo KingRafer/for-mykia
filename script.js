@@ -13,7 +13,7 @@ themeToggle.addEventListener("click", () => {
   localStorage.setItem("theme", isDark ? "light" : "dark");
 });
 
-// ===== Music Player =====
+// ===== Music Player — I Wanna Be Yours =====
 const musicToggle = document.getElementById("music-toggle");
 const musicIcon = document.getElementById("music-icon");
 const bgMusic = document.getElementById("bg-music");
@@ -38,7 +38,6 @@ musicToggle.addEventListener("click", async () => {
   }
 });
 
-// Pause music when page is hidden (optional nice touch)
 document.addEventListener("visibilitychange", () => {
   if (document.hidden && isPlaying) {
     bgMusic.pause();
@@ -48,12 +47,11 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // ===== Countdown (live) =====
-// Anniversary: 17 Oktober 2026 00:00 WIB
 const anniversaryDate = new Date("2026-10-17T00:00:00+07:00").getTime();
 
 function updateCountdown() {
   const now = Date.now();
-  const distance = now - anniversaryDate; // positive = already together
+  const distance = now - anniversaryDate;
 
   const daysEl = document.getElementById("days");
   const hoursEl = document.getElementById("hours");
@@ -61,7 +59,6 @@ function updateCountdown() {
   const secondsEl = document.getElementById("seconds");
   const statusEl = document.getElementById("anniversary-status");
 
-  // Always show time together (since anniversary has passed relative to now)
   const totalSeconds = Math.floor(Math.abs(distance) / 1000);
   const days = Math.floor(totalSeconds / (60 * 60 * 24));
   const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
@@ -74,7 +71,6 @@ function updateCountdown() {
   secondsEl.textContent = String(seconds).padStart(2, "0");
 
   if (distance < 0) {
-    // Still counting down
     statusEl.textContent = "Menuju 17 Oktober 2026 💕";
   } else if (days === 0 && hours < 24) {
     statusEl.textContent = "Hari ini hari jadian kita! 🎉💕";
@@ -94,7 +90,6 @@ const photoDesc = document.getElementById("photo-desc");
 const photoDate = document.getElementById("photo-date");
 const addPhotoBtn = document.getElementById("add-photo-btn");
 
-// Sample starter photos (placeholder gradients + text)
 const defaultPhotos = [
   {
     id: "sample-1",
@@ -151,11 +146,64 @@ function renderGallery() {
         <span class="gallery-card-date">${formatDate(photo.date) || ""}</span>
       </div>
     `;
-
     card.addEventListener("click", () => openLightbox(photo));
     galleryGrid.appendChild(card);
   });
 }
+
+// ===== Modal Add Photo =====
+const addModal = document.getElementById("add-modal");
+const openAddModalBtn = document.getElementById("open-add-modal");
+const closeAddModalBtn = document.getElementById("close-add-modal");
+const previewImg = document.getElementById("preview-img");
+const previewPlaceholder = document.getElementById("preview-placeholder");
+
+function openAddModal() {
+  addModal.classList.remove("hidden");
+  addModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeAddModal() {
+  addModal.classList.add("hidden");
+  addModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  // reset form
+  photoInput.value = "";
+  photoDesc.value = "";
+  photoDate.value = "";
+  previewImg.src = "";
+  previewImg.classList.add("hidden");
+  previewPlaceholder.classList.remove("hidden");
+}
+
+openAddModalBtn.addEventListener("click", openAddModal);
+closeAddModalBtn.addEventListener("click", closeAddModal);
+
+addModal.addEventListener("click", (e) => {
+  if (e.target === addModal) closeAddModal();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeAddModal();
+    closeLightbox();
+  }
+});
+
+// Preview when file selected
+photoInput.addEventListener("change", () => {
+  const file = photoInput.files[0];
+  if (!file || !file.type.startsWith("image/")) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewImg.src = e.target.result;
+    previewImg.classList.remove("hidden");
+    previewPlaceholder.classList.add("hidden");
+  };
+  reader.readAsDataURL(file);
+});
 
 function addPhoto() {
   const file = photoInput.files[0];
@@ -174,20 +222,16 @@ function addPhoto() {
     const photos = loadPhotos();
     photos.unshift({
       id: "local-" + Date.now(),
-      src: e.target.result, // base64
+      src: e.target.result,
       desc: photoDesc.value.trim() || "Kenangan indah",
       date: photoDate.value || new Date().toISOString().slice(0, 10),
     });
     savePhotos(photos);
     renderGallery();
+    closeAddModal();
 
-    // Reset form
-    photoInput.value = "";
-    photoDesc.value = "";
-    photoDate.value = "";
-
-    // Scroll to new photo
-    galleryGrid.scrollIntoView({ behavior: "smooth", block: "start" });
+    // soft scroll to gallery
+    document.getElementById("gallery").scrollIntoView({ behavior: "smooth", block: "start" });
   };
   reader.readAsDataURL(file);
 }
@@ -218,9 +262,6 @@ lightboxClose.addEventListener("click", closeLightbox);
 lightbox.addEventListener("click", (e) => {
   if (e.target === lightbox) closeLightbox();
 });
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeLightbox();
-});
 
-// Init gallery
+// Init
 renderGallery();
