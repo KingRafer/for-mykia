@@ -120,8 +120,24 @@
         <p class="section-desc">Kumpulan momen indah kita</p>
       </div>
 
-      <div class="gallery-actions">
-        <p class="gallery-howto">Cara tambah foto: upload ke folder <strong>assets/</strong> di GitHub, lalu daftar di <strong>photos/data.json</strong></p>
+      <div class="gallery-actions gallery-admin">
+        <div class="gallery-admin-card">
+          <h3>Tambah Kenangan 💗</h3>
+          <p class="gallery-howto">Masuk menggunakan akun pengelola untuk mengunggah foto. Foto tersimpan online dan akan terlihat di semua perangkat.</p>
+          <form id="gallery-login-form" class="gallery-form">
+            <label>Email pengelola<input id="gallery-email" type="email" autocomplete="username" required></label>
+            <label>Password<input id="gallery-password" type="password" autocomplete="current-password" required></label>
+            <button class="btn-submit" type="submit">Masuk</button>
+          </form>
+          <form id="gallery-upload-form" class="gallery-form hidden">
+            <label>Pilih foto<input id="gallery-file" type="file" accept="image/*" required></label>
+            <label>Cerita singkat<input id="gallery-desc" type="text" maxlength="180" placeholder="Tulis kenangan..."></label>
+            <label>Tanggal<input id="gallery-date" type="date"></label>
+            <button class="btn-submit" type="submit">Upload ke Galeri 💕</button>
+            <button class="gallery-logout" id="gallery-logout" type="button">Keluar</button>
+          </form>
+          <p id="gallery-status" class="gallery-howto" role="status" aria-live="polite"></p>
+        </div>
       </div>
 
       <div class="gallery-grid" id="gallery-grid"></div>
@@ -150,6 +166,8 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
+  <script src="cloud-gallery.js"></script>
 </body>
 </html>
