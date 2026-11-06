@@ -302,6 +302,17 @@ section { padding: 4.5rem 0; }
   font-size: 0.95rem;
 }
 
+.sync-status {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+.sync-status.sync-ok { color: #10b981; }
+.sync-status.sync-err { color: #f59e0b; }
+
 .countdown-section { background: var(--bg-secondary); }
 
 .countdown {
@@ -598,7 +609,6 @@ section { padding: 4.5rem 0; }
   padding: 0.5rem 1.5rem 1.8rem;
 }
 
-/* ===== Modal form ===== */
 .form-group {
   margin-bottom: 1rem;
 }
