@@ -1,0 +1,438 @@
+/* ===== CSS Variables ===== */
+:root {
+  /* Light Theme - Soft Pastel */
+  --bg-primary: #fdf8f5;
+  --bg-secondary: #fff5f7;
+  --bg-card: #ffffff;
+  --text-primary: #4a3f35;
+  --text-secondary: #7a6a5f;
+  --accent: #e8a0bf;
+  --accent-soft: #f8d5e3;
+  --accent-2: #b8d4e8;
+  --accent-3: #d4e8c2;
+  --border: #f0e6e0;
+  --shadow: rgba(232, 160, 191, 0.15);
+  --gradient-hero: linear-gradient(135deg, #fdf8f5 0%, #fff0f5 40%, #f0f7ff 100%);
+  --countdown-bg: rgba(255, 255, 255, 0.85);
+  --timeline-line: #f0c8d8;
+}
+
+body.dark {
+  /* Dark Theme - Midnight */
+  --bg-primary: #0c0e1a;
+  --bg-secondary: #12152b;
+  --bg-card: #1a1e36;
+  --text-primary: #e8e6f0;
+  --text-secondary: #a8a4c0;
+  --accent: #c084fc;
+  --accent-soft: #2e1a4a;
+  --accent-2: #6366f1;
+  --accent-3: #818cf8;
+  --border: #2a2f4a;
+  --shadow: rgba(192, 132, 252, 0.12);
+  --gradient-hero: linear-gradient(135deg, #0c0e1a 0%, #15102a 40%, #0f172a 100%);
+  --countdown-bg: rgba(26, 30, 54, 0.9);
+  --timeline-line: #4c1d95;
+}
+
+/* ===== Reset & Base ===== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background 0.4s ease, color 0.4s ease;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ===== Theme Toggle ===== */
+.theme-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 100;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: 0 4px 20px var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px var(--shadow);
+}
+
+body.light .icon-moon {
+  display: none;
+}
+
+body.dark .icon-sun {
+  display: none;
+}
+
+/* ===== Hero ===== */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--gradient-hero);
+  position: relative;
+  padding: 2rem;
+}
+
+.hero-subtitle {
+  font-size: 0.95rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-weight: 400;
+}
+
+.hero-title {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2.8rem, 8vw, 5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+.hero-title .name {
+  display: inline-block;
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-title .ampersand {
+  display: block;
+  font-size: 0.55em;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin: 0.15em 0;
+  -webkit-text-fill-color: var(--text-secondary);
+}
+
+.hero-date {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-top: 0.5rem;
+}
+
+.hero-hearts {
+  margin-top: 1.75rem;
+  font-size: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.scroll-indicator span {
+  display: block;
+  width: 24px;
+  height: 40px;
+  border: 2px solid var(--text-secondary);
+  border-radius: 12px;
+  position: relative;
+}
+
+.scroll-indicator span::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 4px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  animation: scroll 1.5s infinite;
+}
+
+@keyframes scroll {
+  0% { opacity: 1; top: 6px; }
+  100% { opacity: 0; top: 20px; }
+}
+
+/* ===== Sections Common ===== */
+section {
+  padding: 5rem 0;
+}
+
+.section-title {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  text-align: center;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.section-desc {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+  font-size: 1rem;
+}
+
+/* ===== Countdown ===== */
+.countdown-section {
+  background: var(--bg-secondary);
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.countdown-item {
+  background: var(--countdown-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  min-width: 90px;
+  text-align: center;
+  box-shadow: 0 8px 30px var(--shadow);
+  backdrop-filter: blur(8px);
+}
+
+.countdown-number {
+  display: block;
+  font-family: "Playfair Display", serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.1;
+}
+
+.countdown-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-top: 0.35rem;
+  display: block;
+}
+
+.anniversary-note {
+  text-align: center;
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ===== Story / Timeline ===== */
+.timeline {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--timeline-line);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 2.5rem;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -2rem;
+  top: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--bg-primary);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.timeline-content h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 1.25rem;
+  margin-bottom: 0.35rem;
+  color: var(--text-primary);
+}
+
+.timeline-content p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.highlight-date {
+  color: var(--accent) !important;
+  font-weight: 600;
+  font-size: 1.05rem !important;
+  margin-bottom: 0.25rem;
+}
+
+/* ===== Love Notes ===== */
+.notes-section {
+  background: var(--bg-secondary);
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.note-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 6px 24px var(--shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.note-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px var(--shadow);
+}
+
+.note-icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.note-card p {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* ===== Gallery ===== */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.gallery-item {
+  aspect-ratio: 1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover {
+  transform: scale(1.03);
+}
+
+.gallery-item.placeholder span {
+  font-size: 2rem;
+  margin-bottom: 0.4rem;
+  opacity: 0.6;
+}
+
+.gallery-item.placeholder p {
+  font-size: 0.85rem;
+}
+
+/* ===== Footer ===== */
+.footer {
+  padding: 2.5rem 0;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.footer-heart {
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
+  color: var(--text-primary);
+}
+
+.footer-date {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .countdown-item {
+    min-width: 70px;
+    padding: 1rem;
+  }
+
+  .countdown-number {
+    font-size: 1.8rem;
+  }
+
+  .theme-toggle {
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+  }
+}
