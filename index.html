@@ -3,43 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Our Love Story 💕</title>
+  <title>Untuk Saskia 💕 — dari Rafer</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body class="light">
-  <!-- Theme Toggle -->
-  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-    <span class="icon-sun">☀️</span>
-    <span class="icon-moon">🌙</span>
-  </button>
 
-  <!-- Hero Section -->
+  <!-- Floating Controls -->
+  <div class="floating-controls">
+    <button id="theme-toggle" class="control-btn" aria-label="Ganti tema" title="Ganti tema">
+      <span class="icon-sun">☀️</span>
+      <span class="icon-moon">🌙</span>
+    </button>
+    <button id="music-toggle" class="control-btn" aria-label="Play/Pause musik" title="Musik">
+      <span id="music-icon">🎵</span>
+    </button>
+  </div>
+
+  <!-- Audio -->
+  <audio id="bg-music" loop preload="none">
+    <!-- Ganti src dengan lagu favorit kalian (MP3). Contoh: lagu romantic royalty-free -->
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- Hero -->
   <section class="hero">
-    <div class="hero-content">
-      <p class="hero-subtitle">Forever Starts Here</p>
-      <h1 class="hero-title">
-        <span class="name">Kamu</span>
-        <span class="ampersand">&</span>
-        <span class="name">Aku</span>
-      </h1>
-      <p class="hero-date">Sejak 17 Oktober 2026</p>
-      <div class="hero-hearts">
-        <span>💖</span><span>✨</span><span>💖</span>
-      </div>
+    <div class="hero-decor">
+      <span class="sticker s1">💖</span>
+      <span class="sticker s2">✨</span>
+      <span class="sticker s3">🌸</span>
+      <span class="sticker s4">🦋</span>
+      <span class="sticker s5">💫</span>
+      <span class="sticker s6">🎀</span>
     </div>
+
+    <div class="hero-content">
+      <div class="gift-badge">
+        <span class="gift-icon">🎁</span>
+        <span>Hadiah spesial dari Rafer</span>
+      </div>
+
+      <p class="hero-subtitle">Untuk satu-satunya</p>
+
+      <h1 class="hero-title">
+        <span class="name her-name">Saskia</span>
+        <span class="ampersand">Ramadani</span>
+      </h1>
+
+      <p class="hero-from">dengan sepenuh hati dari <strong>Rafer</strong></p>
+
+      <div class="hero-date-badge">
+        <span class="heart-logo">💕</span>
+        <span>Sejak 17 Oktober 2026</span>
+        <span class="heart-logo">💕</span>
+      </div>
+
+      <p class="hero-message">Website ini dibuat khusus untukmu.<br>Setiap detailnya adalah cara aku bilang: aku sayang kamu.</p>
+    </div>
+
     <div class="scroll-indicator">
       <span></span>
     </div>
   </section>
 
-  <!-- Countdown Section -->
+  <!-- Countdown -->
   <section class="countdown-section" id="countdown">
     <div class="container">
-      <h2 class="section-title">Hari Jadian Kita</h2>
-      <p class="section-desc">Menghitung hari menuju momen spesial kita</p>
+      <div class="section-header">
+        <span class="section-logo">⏳</span>
+        <h2 class="section-title">Hari Bersama Kita</h2>
+        <p class="section-desc">Setiap detik bersamamu berharga</p>
+      </div>
+
       <div class="countdown" id="countdown-timer">
         <div class="countdown-item">
           <span class="countdown-number" id="days">00</span>
@@ -58,20 +95,25 @@
           <span class="countdown-label">Detik</span>
         </div>
       </div>
-      <p class="anniversary-note" id="anniversary-status">Menuju 17 Oktober 2026 💕</p>
+
+      <p class="anniversary-note" id="anniversary-status">Menghitung hari bersama 💕</p>
     </div>
   </section>
 
-  <!-- Our Story -->
+  <!-- Story -->
   <section class="story-section" id="story">
     <div class="container">
-      <h2 class="section-title">Kisah Kita</h2>
+      <div class="section-header">
+        <span class="section-logo">📖</span>
+        <h2 class="section-title">Kisah Kita</h2>
+      </div>
+
       <div class="timeline">
         <div class="timeline-item">
           <div class="timeline-dot"></div>
           <div class="timeline-content">
             <h3>Pertama Bertemu</h3>
-            <p>Hari di mana semuanya dimulai. Senyummu membuat dunia terasa lebih indah.</p>
+            <p>Hari di mana senyummu membuat dunia terasa lebih berwarna. Dari situ, semuanya berubah.</p>
           </div>
         </div>
         <div class="timeline-item">
@@ -79,14 +121,14 @@
           <div class="timeline-content">
             <h3>Jadian</h3>
             <p class="highlight-date">17 Oktober 2026</p>
-            <p>Hari di mana kita memutuskan untuk menjalani perjalanan ini bersama. Forever starts today.</p>
+            <p>Hari di mana aku berani bilang "kita". Hari di mana kamu memilihku. Terima kasih, Saskia.</p>
           </div>
         </div>
         <div class="timeline-item">
           <div class="timeline-dot"></div>
           <div class="timeline-content">
             <h3>Hari Ini & Selamanya</h3>
-            <p>Setiap hari adalah halaman baru dalam buku cinta kita. Terima kasih sudah memilihku.</p>
+            <p>Setiap hari adalah halaman baru. Aku ingin menulis cerita panjang ini bersamamu, sampai tua.</p>
           </div>
         </div>
       </div>
@@ -96,58 +138,70 @@
   <!-- Love Notes -->
   <section class="notes-section" id="notes">
     <div class="container">
-      <h2 class="section-title">Catatan Cinta</h2>
+      <div class="section-header">
+        <span class="section-logo">💌</span>
+        <h2 class="section-title">Catatan untuk Saskia</h2>
+      </div>
+
       <div class="notes-grid">
         <div class="note-card">
-          <div class="note-icon">💌</div>
+          <div class="note-icon">💖</div>
           <p>"Kamu adalah rumah yang selalu ingin kutuju."</p>
+          <span class="note-from">— Rafer</span>
         </div>
         <div class="note-card">
           <div class="note-icon">🌸</div>
-          <p>"Bersamamu, hari-hari biasa terasa istimewa."</p>
+          <p>"Bersamamu, hari-hari biasa jadi istimewa."</p>
+          <span class="note-from">— Rafer</span>
         </div>
         <div class="note-card">
           <div class="note-icon">🌙</div>
           <p>"Di setiap malam, doaku selalu untukmu."</p>
+          <span class="note-from">— Rafer</span>
         </div>
         <div class="note-card">
           <div class="note-icon">✨</div>
-          <p>"Cinta kita adalah bintang yang tak pernah padam."</p>
+          <p>"Cinta kita bintang yang tak pernah padam."</p>
+          <span class="note-from">— Rafer</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Gallery Placeholder -->
+  <!-- Gallery -->
   <section class="gallery-section" id="gallery">
     <div class="container">
-      <h2 class="section-title">Galeri Kenangan</h2>
-      <p class="section-desc">Tempat foto-foto indah kita nanti</p>
-      <div class="gallery-grid">
-        <div class="gallery-item placeholder">
-          <span>📷</span>
-          <p>Foto 1</p>
+      <div class="section-header">
+        <span class="section-logo">📷</span>
+        <h2 class="section-title">Galeri Kenangan</h2>
+        <p class="section-desc">Foto-foto indah kita. Bisa tambah deskripsi & tanggal.</p>
+      </div>
+
+      <!-- Add Photo Form -->
+      <div class="add-photo-box">
+        <h3><span class="mini-logo">➕</span> Tambah Foto Baru</h3>
+        <div class="add-photo-form">
+          <div class="form-row">
+            <label>Pilih Foto</label>
+            <input type="file" id="photo-input" accept="image/*" />
+          </div>
+          <div class="form-row">
+            <label>Judul / Deskripsi (opsional)</label>
+            <input type="text" id="photo-desc" placeholder="Contoh: Jalan-jalan di pantai..." />
+          </div>
+          <div class="form-row">
+            <label>Tanggal (opsional)</label>
+            <input type="date" id="photo-date" />
+          </div>
+          <button type="button" id="add-photo-btn" class="btn-primary">
+            <span>Tambahkan ke Galeri</span>
+          </button>
         </div>
-        <div class="gallery-item placeholder">
-          <span>📷</span>
-          <p>Foto 2</p>
-        </div>
-        <div class="gallery-item placeholder">
-          <span>📷</span>
-          <p>Foto 3</p>
-        </div>
-        <div class="gallery-item placeholder">
-          <span>📷</span>
-          <p>Foto 4</p>
-        </div>
-        <div class="gallery-item placeholder">
-          <span>📷</span>
-          <p>Foto 5</p>
-        </div>
-        <div class="gallery-item placeholder">
-          <span>📷</span>
-          <p>Foto 6</p>
-        </div>
+        <p class="form-hint">Foto disimpan di browser ini saja (local). Untuk permanen, upload ke repo atau hosting.</p>
+      </div>
+
+      <div class="gallery-grid" id="gallery-grid">
+        <!-- Photos rendered by JS -->
       </div>
     </div>
   </section>
@@ -155,10 +209,22 @@
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p class="footer-heart">Made with 💖 for us</p>
-      <p class="footer-date">17.10.2026 — Forever</p>
+      <div class="footer-logo">💕</div>
+      <p class="footer-heart">Dibuat dengan cinta oleh <strong>Rafer</strong></p>
+      <p class="footer-for">Khusus untuk <strong>Saskia Ramadani</strong></p>
+      <p class="footer-date">17.10.2026 — Forever & Always</p>
     </div>
   </footer>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox hidden">
+    <button class="lightbox-close" id="lightbox-close">✕</button>
+    <img id="lightbox-img" src="" alt="" />
+    <div class="lightbox-info">
+      <p id="lightbox-desc"></p>
+      <span id="lightbox-date"></span>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
