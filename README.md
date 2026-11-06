@@ -21,46 +21,29 @@ Website couple yang dibuat khusus untuk **Saskia Ramadani**.
 | ✨ Sticker & logo | Dekorasi aesthetic di seluruh halaman |
 | 📱 Responsive | Nyaman di HP & desktop |
 
-## Cara pakai Galeri
+## Galeri foto lintas perangkat (Supabase)
 
-1. Klik **Tambah Kenangan**
-2. Pilih foto dari HP/laptop
-3. Isi deskripsi & tanggal (opsional)
-4. Klik **Simpan ke Galeri**
+Galeri menggunakan Supabase Storage untuk file foto dan tabel database untuk metadata. Foto yang berhasil diunggah akan tampil di semua perangkat yang membuka website, bukan hanya browser pengunggah.
 
-Foto yang ditambahkan lewat tombol disimpan di **localStorage** browser (otomatis dikompres).
+### Pengaturan satu kali
 
-### Foto permanen (semua orang bisa lihat)
+1. Buat project Supabase dan tunggu sampai project siap.
+2. Buka **SQL Editor**, salin seluruh isi file `supabase-setup.sql`, lalu jalankan.
+3. Buka **Authentication → Users** dan buat satu akun email/password khusus pengelola galeri. Jangan aktifkan pendaftaran publik jika hanya pengelola yang boleh mengunggah.
+4. Buka **Project Settings → API**. Salin **Project URL** dan **anon/public key**.
+5. Buka `cloud-gallery.js` di GitHub. Ganti `ISI_SUPABASE_PROJECT_URL` dan `ISI_SUPABASE_ANON_KEY` dengan nilai project milikmu.
+6. Simpan perubahan. Jika Vercel terhubung ke GitHub, tunggu deployment selesai.
 
-1. Upload file foto ke folder `photos/` (misal: `foto-pantai.jpg`)
-2. Edit `photos/data.json`, contoh:
+**Penting:** gunakan hanya anon/public key di frontend. Jangan pernah memasukkan `service_role` key atau password akun ke dalam file website.
 
-```json
-[
-  {
-    "src": "photos/foto-pantai.jpg",
-    "desc": "Jalan sore di pantai",
-    "date": "2026-10-20"
-  }
-]
-```
+### Cara menggunakan
 
-3. Commit & push → GitHub Pages otomatis update
+1. Buka website dan masuk menggunakan akun pengelola.
+2. Pilih foto (maksimal 5 MB), isi cerita/tanggal bila perlu, lalu tekan **Upload ke Galeri**.
+3. Pengunjung lain dapat melihat foto tanpa login. Untuk mengunggah, perlu akun pengelola.
+4. Perangkat yang sedang membuka website akan menerima pembaruan galeri otomatis; perangkat lain akan memuat foto terbaru saat halaman dibuka atau dimuat ulang.
 
-### Cloudinary (opsional)
-
-Kalau mau upload langsung ke cloud:
-
-1. Buat akun [Cloudinary](https://cloudinary.com)
-2. Settings → Upload → Add upload preset → mode **Unsigned**
-3. Di `script.js`, isi:
-
-```js
-const CLOUD_NAME = "nama_cloud_kamu";
-const UPLOAD_PRESET = "nama_preset_unsigned";
-```
-
-Kalau preset salah/kosong, sistem otomatis simpan di browser.
+File foto lama yang hanya ada di folder browser/localStorage tidak otomatis dipindahkan ke cloud. Unggah ulang foto tersebut setelah konfigurasi selesai, atau tambahkan secara manual ke bucket dan tabel Supabase.
 
 ## Ganti Musik
 
