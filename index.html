@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>For Saskia 💕 — from Rafer</title>
+  <link rel="preload" as="image" href="assets/saskia-card.jpg" fetchpriority="high" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,7 +22,7 @@
     </button>
   </div>
 
-  <audio id="bg-music" loop preload="metadata">
+  <audio id="bg-music" loop preload="none">
     <source src="https://archive.org/download/arctic-monkeys-i-wanna-be-yours/Arctic%20Monkeys%20-%20I%20Wanna%20Be%20Yours.mp3" type="audio/mpeg" />
   </audio>
 
@@ -54,7 +55,7 @@
 
       <figure class="hero-photo-card">
         <div class="photo-card-frame">
-          <img src="assets/saskia-card.jpg" alt="Foto kenangan Saskia" loading="eager">
+          <img src="assets/saskia-card.jpg" alt="Foto kenangan Saskia" loading="eager" fetchpriority="high" decoding="async">
           <span class="photo-card-sparkle sparkle-one">✦</span>
           <span class="photo-card-sparkle sparkle-two">✧</span>
         </div>
