@@ -1,5 +1,4 @@
-// ===== Galeri statis: foto di folder assets/ =====
-const DATA_URL = "photos/data.json";
+// Galeri bersama dimuat dari API GitHub melalui cloud-gallery.js.
 
 // ===== Theme =====
 const themeToggle = document.getElementById("theme-toggle");
@@ -91,7 +90,7 @@ function renderGallery(photos) {
   galleryGrid.innerHTML = "";
   if (!photos || !photos.length) {
     galleryGrid.innerHTML =
-      '<div class="gallery-empty">Belum ada foto. Tambahkan file ke folder <code>assets/</code> di GitHub, lalu isi <code>photos/data.json</code> \uD83D\uDCF7\uD83D\uDC95</div>';
+      '<div class="gallery-empty"><span class="gallery-empty-icon">✦</span><strong>Belum ada kenangan di sini</strong><span>Ruang kecil ini siap diisi dengan momen-momen indah kalian.</span></div>';
     return;
   }
   const frag = document.createDocumentFragment();
