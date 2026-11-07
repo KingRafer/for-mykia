@@ -123,6 +123,21 @@ function renderGallery(photos) {
       '" loading="lazy" decoding="async" />' +
       overlay +
       "</div>";
+    if (typeof photo.id === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-[0-9a-f-]{36}\.(jpg|png|webp|gif)$/i.test(photo.id)) {
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "btn-delete-photo";
+      deleteButton.textContent = "✕";
+      deleteButton.setAttribute("aria-label", "Hapus foto");
+      deleteButton.title = "Hapus foto";
+      deleteButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+        if (typeof window.requestPhotoDeletion === "function") {
+          window.requestPhotoDeletion(photo.id);
+        }
+      });
+      card.querySelector(".gallery-media").appendChild(deleteButton);
+    }
     card.addEventListener("click", function () {
       openLightbox({
         src: src,
