@@ -2,6 +2,8 @@ const OWNER = process.env.GITHUB_OWNER || "KingRafer";
 const REPO = process.env.GITHUB_REPO || "for-mykia";
 const BRANCH = process.env.GITHUB_BRANCH || "main";
 const TOKEN = process.env.GITHUB_TOKEN;
+const UPLOAD_PASSWORD = process.env.GALLERY_UPLOAD_PASSWORD;
+const crypto = require("crypto");
 const API = "https://api.github.com";
 const RAW = "https://raw.githubusercontent.com";
 
@@ -30,6 +32,12 @@ function respond(res, status, body) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   return res.status(status).json(body);
+}
+function passwordMatches(candidate) {
+  if (typeof candidate !== "string" || !UPLOAD_PASSWORD) return false;
+  const expected = crypto.createHash("sha256").update(UPLOAD_PASSWORD, "utf8").digest();
+  const actual = crypto.createHash("sha256").update(candidate, "utf8").digest();
+  return crypto.timingSafeEqual(expected, actual);
 }
 async function getGallery() {
   const photos = [];
@@ -83,7 +91,9 @@ module.exports = async function handler(req, res) {
       res.setHeader("Allow", "GET, POST");
       return respond(res, 405, { error: "Method tidak diizinkan." });
     }
+    if (!UPLOAD_PASSWORD) return respond(res, 500, { error: "Admin belum mengatur GALLERY_UPLOAD_PASSWORD di Vercel." });
     const body = req.body || {};
+    if (!passwordMatches(body.uploadPassword)) return respond(res, 401, { error: "Kata sandi upload salah." });
     const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!allowed.includes(body.mimeType) || typeof body.contentBase64 !== "string") {
       return respond(res, 400, { error: "File gambar tidak valid." });
@@ -117,7 +127,7 @@ module.exports = async function handler(req, res) {
     console.error("Gallery API error:", error);
     const message = error.status === 401 || error.status === 403
       ? "GitHub menolak akses. Periksa token dan izin Contents: Read and write."
-      : "Gagal mengakses GitHub: " + (error.message || "Kesalahan server.");
+      : "Gagal mengakses GitHub. Periksa konfigurasi Vercel dan coba lagi.";
     return respond(res, error.status && error.status < 500 ? error.status : 500, { error: message });
   }
 };
