@@ -9,6 +9,71 @@
   const uploadModal = document.getElementById("upload-modal");
   const openUploadButton = document.getElementById("open-upload-modal");
   const closeUploadButton = document.getElementById("close-upload-modal");
+  const deleteModal = document.getElementById("delete-photo-modal");
+  const deleteForm = document.getElementById("delete-photo-form");
+  const deletePasswordInput = document.getElementById("delete-photo-password");
+  const deleteStatus = document.getElementById("delete-photo-status");
+  const cancelDeleteButtons = [
+    document.getElementById("cancel-delete-photo"),
+    document.getElementById("cancel-delete-photo-secondary")
+  ];
+  let selectedPhotoId = null;
+
+  function closeDeleteModal() {
+    if (!deleteModal) return;
+    deleteModal.classList.add("hidden");
+    deleteModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    deleteForm?.reset();
+    if (deleteStatus) deleteStatus.textContent = "";
+    selectedPhotoId = null;
+  }
+
+  window.requestPhotoDeletion = function (photoId) {
+    selectedPhotoId = photoId;
+    if (!deleteModal) return;
+    deleteModal.classList.remove("hidden");
+    deleteModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    deletePasswordInput?.focus();
+  };
+
+  cancelDeleteButtons.forEach(button => button?.addEventListener("click", closeDeleteModal));
+  deleteModal?.addEventListener("click", event => {
+    if (event.target === deleteModal) closeDeleteModal();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && deleteModal && !deleteModal.classList.contains("hidden")) {
+      closeDeleteModal();
+    }
+  });
+
+  deleteForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!selectedPhotoId) return;
+    const button = deleteForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+    if (deleteStatus) deleteStatus.textContent = "Menghapus foto...";
+    try {
+      const response = await fetch("/api/gallery", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedPhotoId,
+          uploadPassword: deletePasswordInput.value
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Foto gagal dihapus.");
+      closeDeleteModal();
+      await refreshGallery();
+      status("Foto berhasil dihapus dari galeri.");
+    } catch (error) {
+      if (deleteStatus) deleteStatus.textContent = error.message || "Foto gagal dihapus.";
+    } finally {
+      button.disabled = false;
+    }
+  });
 
   function openUploadModal() {
     if (!uploadModal) return;
