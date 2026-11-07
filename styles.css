@@ -918,3 +918,90 @@ section { padding: 4.5rem 0; }
   background: transparent; color: var(--text-secondary); cursor: pointer;
 }
 #gallery-status { text-align: center; overflow-wrap: anywhere; margin-top: .75rem; }
+
+
+/* ===== Upload form modal ===== */
+.upload-modal-card {
+  max-width: 480px;
+  border-radius: 26px;
+  border: 1px solid var(--border);
+}
+.upload-modal-card .modal-header {
+  padding-top: 2.25rem;
+}
+.upload-modal-note {
+  color: var(--text-secondary);
+  font-size: .82rem;
+  line-height: 1.6;
+  text-align: center;
+  margin: .15rem 0 1.15rem;
+}
+.gallery-form {
+  display: grid;
+  gap: .95rem;
+  margin-top: 0;
+}
+.upload-field {
+  display: grid;
+  gap: .42rem;
+  color: var(--text-primary);
+  font-size: .84rem;
+  font-weight: 600;
+}
+.upload-field > span {
+  display: inline;
+  color: var(--text-secondary);
+  font-size: .76rem;
+  font-weight: 400;
+}
+.upload-field input {
+  width: 100%;
+  min-width: 0;
+  padding: .78rem .9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 13px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font: 400 .88rem "Poppins", sans-serif;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.upload-field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.upload-field input[type="file"] {
+  padding: .65rem;
+  font-size: .78rem;
+  cursor: pointer;
+}
+.upload-field input[type="file"]::file-selector-button {
+  margin-right: .7rem;
+  padding: .48rem .75rem;
+  border: 0;
+  border-radius: 9px;
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  font: 500 .78rem "Poppins", sans-serif;
+  cursor: pointer;
+}
+.upload-modal-card .btn-submit {
+  margin-top: .2rem;
+  min-height: 48px;
+}
+#gallery-status {
+  min-height: 1.2em;
+  font-size: .78rem;
+}
+@media (max-width: 600px) {
+  .upload-modal-card {
+    max-height: 90vh;
+    border-radius: 22px;
+  }
+  .upload-modal-card .modal-header {
+    padding: 1.6rem 1.2rem .8rem;
+  }
+  .upload-modal-card .modal-body {
+    padding: .5rem 1.15rem 1.35rem;
+  }
+}
