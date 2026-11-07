@@ -28,8 +28,8 @@ async function github(path, options = {}) {
 function rawUrl(path) {
   return RAW + "/" + OWNER + "/" + REPO + "/" + BRANCH + "/" + path.split("/").map(encodeURIComponent).join("/");
 }
-function respond(res, status, body) {
-  res.setHeader("Cache-Control", "no-store, max-age=0");
+function respond(res, status, body, cacheControl = "no-store, max-age=0") {
+  res.setHeader("Cache-Control", cacheControl);
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   return res.status(status).json(body);
 }
@@ -86,7 +86,7 @@ function validImage(buffer, mime) {
 module.exports = async function handler(req, res) {
   if (!TOKEN) return respond(res, 500, { error: "Tambahkan GITHUB_TOKEN di Vercel Environment Variables." });
   try {
-    if (req.method === "GET") return respond(res, 200, { photos: await getGallery() });
+    if (req.method === "GET") return respond(res, 200, { photos: await getGallery() }, "public, max-age=15, stale-while-revalidate=45");
     if (!["POST", "DELETE"].includes(req.method)) {
       res.setHeader("Allow", "GET, POST, DELETE");
       return respond(res, 405, { error: "Method tidak diizinkan." });
