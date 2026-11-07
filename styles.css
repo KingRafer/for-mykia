@@ -1227,3 +1227,112 @@ body.dark .countdown-item {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Lavender garden in daylight, starry midnight after dark */
+body.light .hero {
+  background-image:
+    radial-gradient(ellipse at 12% 20%, rgba(194, 166, 224, .24), transparent 34%),
+    radial-gradient(ellipse at 88% 18%, rgba(255, 207, 221, .3), transparent 30%),
+    var(--gradient-hero);
+}
+body.light .hero-decor::before,
+body.light .hero-decor::after {
+  content: "✿  ❀  ✿";
+  position: absolute;
+  color: rgba(142, 112, 181, .24);
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  letter-spacing: 1.4rem;
+  pointer-events: none;
+  transform: rotate(-15deg);
+}
+body.light .hero-decor::before { left: 4%; top: 18%; }
+body.light .hero-decor::after { right: 2%; bottom: 15%; transform: rotate(15deg); }
+body.dark .hero {
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(101, 128, 190, .18), transparent 48%),
+    var(--gradient-hero);
+}
+body.dark .hero-decor::before,
+body.dark .hero-decor::after {
+  content: "✦     ·      ✧       ·      ✦";
+  position: absolute;
+  color: rgba(221, 231, 255, .48);
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  letter-spacing: .7rem;
+  pointer-events: none;
+  text-shadow: 0 0 14px rgba(190, 210, 255, .7);
+}
+body.dark .hero-decor::before { top: 13%; left: 7%; }
+body.dark .hero-decor::after { right: 5%; bottom: 14%; }
+
+.hero-photo-card {
+  position: relative;
+  width: min(270px, 68vw);
+  margin: 2rem auto 0;
+  padding: 11px 11px 16px;
+  border-radius: 8px;
+  background: #fffdf9;
+  box-shadow: 0 18px 45px rgba(84, 59, 91, .2), 0 3px 9px rgba(84, 59, 91, .1);
+  transform: rotate(-2.2deg);
+  transition: transform .35s ease, box-shadow .35s ease;
+  z-index: 2;
+}
+.hero-photo-card:hover {
+  transform: rotate(0deg) translateY(-5px);
+  box-shadow: 0 24px 55px rgba(84, 59, 91, .25);
+}
+.photo-card-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 420 / 740;
+  background: #eee5ef;
+}
+.photo-card-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 43%;
+}
+.photo-card-sparkle {
+  position: absolute;
+  color: #fff8db;
+  text-shadow: 0 1px 8px rgba(43, 30, 65, .45);
+}
+.sparkle-one { top: 12px; right: 14px; font-size: 1.45rem; }
+.sparkle-two { bottom: 16px; left: 13px; font-size: 1.2rem; }
+.hero-photo-card figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding-top: 12px;
+  color: #57445f;
+  text-align: center;
+}
+.photo-card-caption {
+  color: #9b829d;
+  font: italic .68rem "Poppins", sans-serif;
+  letter-spacing: .04em;
+}
+.hero-photo-card figcaption strong {
+  font: 600 1.28rem "Playfair Display", serif;
+}
+.photo-card-from {
+  color: #a28f9e;
+  font: .62rem "Poppins", sans-serif;
+  letter-spacing: .08em;
+}
+body.dark .hero-photo-card {
+  background: #e9e5f3;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .45), 0 0 30px rgba(160, 177, 255, .16);
+}
+body.dark .hero-photo-card:hover {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .5), 0 0 38px rgba(160, 177, 255, .22);
+}
+@media (max-width: 600px) {
+  .hero-photo-card { width: min(230px, 66vw); margin-top: 1.5rem; }
+  body.light .hero-decor::before { left: 0; top: 22%; }
+  body.light .hero-decor::after { right: 0; bottom: 12%; }
+}
