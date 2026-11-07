@@ -5,6 +5,7 @@
   const fileInput = document.getElementById("gallery-file");
   const descInput = document.getElementById("gallery-desc");
   const dateInput = document.getElementById("gallery-date");
+  const passwordInput = document.getElementById("gallery-password");
 
   function status(message, isError = false) {
     if (!statusEl) return;
@@ -52,7 +53,8 @@
           contentBase64,
           mimeType: file.type,
           description: descInput.value.trim(),
-          date: dateInput.value
+          date: dateInput.value,
+          uploadPassword: passwordInput.value
         })
       });
       const result = await response.json();
