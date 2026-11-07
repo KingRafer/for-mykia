@@ -111,7 +111,7 @@
 
   async function refreshGallery() {
     try {
-      const response = await fetch("/api/gallery", { cache: "no-store" });
+      const response = await fetch("/api/gallery");
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Gagal memuat galeri.");
       if (typeof window.renderGallery === "function") window.renderGallery(result.photos || []);
