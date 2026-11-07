@@ -17,7 +17,7 @@ Website couple yang dibuat khusus untuk **Saskia Ramadani**.
 | 🎵 Musik | Play/pause background music |
 | 📷 Galeri foto | Tambah foto + deskripsi + tanggal |
 | 🔍 Lightbox | Klik foto untuk lihat lebih besar + download |
-| 🗑️ Hapus foto | Hapus foto yang ditambahkan dari browser |
+| 🔐 Proteksi upload | Unggah foto memerlukan kata sandi khusus; galeri tetap publik |
 | ✨ Sticker & logo | Dekorasi aesthetic di seluruh halaman |
 | 📱 Responsive | Nyaman di HP & desktop |
 
@@ -35,17 +35,19 @@ Foto yang diunggah disimpan langsung di repository GitHub pada folder `photos/up
    - `GITHUB_OWNER` = `KingRafer`
    - `GITHUB_REPO` = `for-mykia`
    - `GITHUB_BRANCH` = `main`
+   - `GALLERY_UPLOAD_PASSWORD` = kata sandi rahasia untuk mengunggah foto (buat sendiri, minimal 16 karakter)
 5. Pilih environment Production, simpan, lalu lakukan Redeploy.
 
 **Jangan pernah menaruh GITHUB_TOKEN di file HTML/JS, repository, atau membagikannya lewat chat.** Jika token pernah terlanjur dibagikan, revoke dan buat token baru.
 
 ### Cara menggunakan
 
-1. Buka website dan pilih foto (maksimal 3 MB; JPG, PNG, WEBP, atau GIF).
-2. Isi cerita/tanggal bila perlu, lalu tekan **Upload ke Galeri**.
-3. Foto dan metadata disimpan di folder `photos/uploads/` dan akan tampil pada perangkat lain.
+1. Semua pengunjung dapat melihat galeri tanpa kata sandi.
+2. Untuk mengunggah, masukkan `GALLERY_UPLOAD_PASSWORD` yang sudah disimpan di Vercel.
+3. Pilih foto (maksimal 3 MB; JPG, PNG, WEBP, atau GIF), isi cerita/tanggal bila perlu, lalu tekan **Upload ke Galeri**.
+4. Foto dan metadata disimpan di folder `photos/uploads/` dan tampil pada perangkat lain.
 
-Catatan: form ini terbuka untuk siapa pun yang mengunjungi website. Setiap upload membuat commit baru di repository, jadi batasi ukuran foto dan pantau penggunaan repository.
+Kata sandi diperiksa di server dan tidak disimpan di file HTML/JavaScript. Jangan bagikan kata sandi secara publik. Setiap unggahan membuat commit baru di repository. Proteksi kata sandi bukan pengganti pembatasan laju unggahan; bila kata sandi tersebar, segera ganti nilai `GALLERY_UPLOAD_PASSWORD` di Vercel lalu redeploy.
 
 ## Ganti Musik
 
