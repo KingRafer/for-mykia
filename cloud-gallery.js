@@ -6,6 +6,36 @@
   const descInput = document.getElementById("gallery-desc");
   const dateInput = document.getElementById("gallery-date");
   const passwordInput = document.getElementById("gallery-password");
+  const uploadModal = document.getElementById("upload-modal");
+  const openUploadButton = document.getElementById("open-upload-modal");
+  const closeUploadButton = document.getElementById("close-upload-modal");
+
+  function openUploadModal() {
+    if (!uploadModal) return;
+    uploadModal.classList.remove("hidden");
+    uploadModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    closeUploadButton?.focus();
+  }
+
+  function closeUploadModal() {
+    if (!uploadModal) return;
+    uploadModal.classList.add("hidden");
+    uploadModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    openUploadButton?.focus();
+  }
+
+  openUploadButton?.addEventListener("click", openUploadModal);
+  closeUploadButton?.addEventListener("click", closeUploadModal);
+  uploadModal?.addEventListener("click", event => {
+    if (event.target === uploadModal) closeUploadModal();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && uploadModal && !uploadModal.classList.contains("hidden")) {
+      closeUploadModal();
+    }
+  });
 
   function status(message, isError = false) {
     if (!statusEl) return;
@@ -61,6 +91,7 @@
       if (!response.ok) throw new Error(result.error || "Upload gagal.");
 
       form.reset();
+      closeUploadModal();
       await refreshGallery();
       status("Foto berhasil disimpan ke GitHub dan tampil untuk semua perangkat.");
     } catch (error) {
