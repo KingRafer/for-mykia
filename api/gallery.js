@@ -87,13 +87,39 @@ module.exports = async function handler(req, res) {
   if (!TOKEN) return respond(res, 500, { error: "Tambahkan GITHUB_TOKEN di Vercel Environment Variables." });
   try {
     if (req.method === "GET") return respond(res, 200, { photos: await getGallery() });
-    if (req.method !== "POST") {
-      res.setHeader("Allow", "GET, POST");
+    if (!["POST", "DELETE"].includes(req.method)) {
+      res.setHeader("Allow", "GET, POST, DELETE");
       return respond(res, 405, { error: "Method tidak diizinkan." });
     }
     if (!UPLOAD_PASSWORD) return respond(res, 500, { error: "Admin belum mengatur GALLERY_UPLOAD_PASSWORD di Vercel." });
     const body = req.body || {};
     if (!passwordMatches(body.uploadPassword)) return respond(res, 401, { error: "Kata sandi upload salah." });
+
+    if (req.method === "DELETE") {
+      const id = typeof body.id === "string" ? body.id : "";
+      const allowedId = /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-[0-9a-f-]{36}\.(jpg|png|webp|gif)$/i;
+      if (!allowedId.test(id)) return respond(res, 400, { error: "Foto tidak valid atau bukan foto unggahan." });
+
+      const imagePath = "photos/uploads/" + id;
+      const metadataPath = imagePath + ".json";
+      const encodedPath = path => path.split("/").map(encodeURIComponent).join("/");
+      const imageFile = await github("/repos/" + OWNER + "/" + REPO + "/contents/" + encodedPath(imagePath) + "?ref=" + encodeURIComponent(BRANCH));
+      await github("/repos/" + OWNER + "/" + REPO + "/contents/" + encodedPath(imagePath), {
+        method: "DELETE",
+        body: JSON.stringify({ message: "Delete gallery photo", sha: imageFile.sha, branch: BRANCH })
+      });
+
+      try {
+        const metadataFile = await github("/repos/" + OWNER + "/" + REPO + "/contents/" + encodedPath(metadataPath) + "?ref=" + encodeURIComponent(BRANCH));
+        await github("/repos/" + OWNER + "/" + REPO + "/contents/" + encodedPath(metadataPath), {
+          method: "DELETE",
+          body: JSON.stringify({ message: "Delete gallery photo metadata", sha: metadataFile.sha, branch: BRANCH })
+        });
+      } catch (metadataError) {
+        if (metadataError.status !== 404) throw metadataError;
+      }
+      return respond(res, 200, { success: true, id });
+    }
     const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!allowed.includes(body.mimeType) || typeof body.contentBase64 !== "string") {
       return respond(res, 400, { error: "File gambar tidak valid." });
