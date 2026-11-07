@@ -157,6 +157,27 @@
           </div>
         </div>
       </div>
+
+      <div class="modal-overlay hidden" id="delete-photo-modal" aria-hidden="true">
+        <div class="modal-card upload-modal-card" role="dialog" aria-modal="true" aria-labelledby="delete-photo-title">
+          <button type="button" class="modal-close" id="cancel-delete-photo" aria-label="Tutup">✕</button>
+          <div class="modal-header">
+            <span class="modal-logo">🗑️</span>
+            <h2 id="delete-photo-title">Hapus Kenangan?</h2>
+            <p>Foto ini akan dihapus dari galeri bersama.</p>
+          </div>
+          <div class="modal-body">
+            <form id="delete-photo-form" class="gallery-form">
+              <label class="upload-field">Kata sandi upload
+                <input id="delete-photo-password" type="password" maxlength="256" autocomplete="current-password" placeholder="Masukkan kata sandi" required>
+              </label>
+              <p id="delete-photo-status" class="gallery-howto" role="status" aria-live="polite"></p>
+              <button class="btn-submit delete-confirm-button" type="submit">Ya, hapus foto</button>
+              <button class="delete-cancel-button" type="button" id="cancel-delete-photo-secondary">Batal</button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
