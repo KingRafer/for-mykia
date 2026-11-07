@@ -121,21 +121,42 @@
       </div>
 
       <div class="gallery-actions gallery-admin">
-        <div class="gallery-admin-card">
-          <h3>Tambah Kenangan 💗</h3>
-          <p class="gallery-howto">Galeri bisa dilihat semua orang. Untuk menambahkan foto, masukkan kata sandi upload. Foto tersimpan di GitHub dan terlihat di semua perangkat. Maksimal 3 MB per foto.</p>
-          <form id="gallery-upload-form" class="gallery-form">
-            <label>Pilih foto<input id="gallery-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" required></label>
-            <label>Cerita singkat<input id="gallery-desc" type="text" maxlength="180" placeholder="Tulis kenangan..."></label>
-            <label>Tanggal<input id="gallery-date" type="date"></label>
-            <label>Kata sandi upload<input id="gallery-password" type="password" maxlength="256" autocomplete="current-password" placeholder="Masukkan kata sandi" required></label>
-            <button class="btn-submit" type="submit">Upload ke Galeri 💕</button>
-          </form>
-          <p id="gallery-status" class="gallery-howto" role="status" aria-live="polite"></p>
-        </div>
+        <button type="button" class="btn-add-memory" id="open-upload-modal">
+          <span class="btn-icon">＋</span> Tambah Kenangan
+        </button>
       </div>
 
       <div class="gallery-grid" id="gallery-grid"></div>
+
+      <div class="modal-overlay hidden" id="upload-modal" aria-hidden="true">
+        <div class="modal-card upload-modal-card" role="dialog" aria-modal="true" aria-labelledby="upload-modal-title">
+          <button type="button" class="modal-close" id="close-upload-modal" aria-label="Tutup">✕</button>
+          <div class="modal-header">
+            <span class="modal-logo">📸</span>
+            <h2 id="upload-modal-title">Tambah Kenangan</h2>
+            <p>Simpan momen indah kita di galeri 💗</p>
+          </div>
+          <div class="modal-body">
+            <p class="upload-modal-note">Pilih foto, tambahkan cerita, lalu masukkan kata sandi upload. Maksimal 3 MB per foto.</p>
+            <form id="gallery-upload-form" class="gallery-form">
+              <label class="upload-field">Foto kenangan
+                <input id="gallery-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" required>
+              </label>
+              <label class="upload-field">Cerita singkat <span>(opsional)</span>
+                <input id="gallery-desc" type="text" maxlength="180" placeholder="Tulis kenangan...">
+              </label>
+              <label class="upload-field">Tanggal
+                <input id="gallery-date" type="date">
+              </label>
+              <label class="upload-field">Kata sandi upload
+                <input id="gallery-password" type="password" maxlength="256" autocomplete="current-password" placeholder="Masukkan kata sandi" required>
+              </label>
+              <button class="btn-submit" type="submit">Upload ke Galeri 💕</button>
+            </form>
+            <p id="gallery-status" class="gallery-howto" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
