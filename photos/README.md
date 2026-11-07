@@ -1,30 +1,7 @@
-# Folder Foto
+# Galeri Kenangan
 
-Foto permanen galeri disimpan di sini (terlihat oleh semua pengunjung).
+Galeri menggunakan API GitHub melalui Vercel. Foto yang ditambahkan dari website disimpan di `photos/uploads/` dan metadata-nya dibuat otomatis.
 
-## Cara menambah foto permanen
+Folder ini tidak lagi menggunakan foto bawaan. Daftar foto permanen awal dikosongkan di `data.json`.
 
-1. Upload file foto ke folder ini (misal: `foto-pantai.jpg`)
-2. Buka file `data.json`
-3. Tambahkan entri baru di array, contoh:
-
-```json
-[
-  {
-    "src": "photos/foto-pantai.jpg",
-    "desc": "Jalan sore di pantai",
-    "date": "2026-10-20"
-  }
-]
-```
-
-- `desc` boleh dikosongkan: `"desc": ""`
-- `date` format: `YYYY-MM-DD`, boleh dikosongkan: `"date": ""`
-
-4. Commit & push → GitHub Pages otomatis update
-
-## Catatan
-
-- Pakai nama file tanpa spasi (pakai `-` atau `_`)
-- Format: `.jpg`, `.jpeg`, `.png`, `.webp`
-- Foto yang ditambahkan lewat tombol di website disimpan di browser pengunjung (localStorage), bukan di folder ini
+Untuk menambahkan kenangan, gunakan tombol **Tambah Kenangan** pada website. Penghapusan foto unggahan dilakukan dari website dengan kata sandi upload.
