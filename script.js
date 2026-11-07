@@ -204,4 +204,4 @@ if (downloadBtn) {
   });
 }
 
-loadGallery();
+// Galeri dimuat oleh cloud-gallery.js agar tidak ada dua sumber data yang saling menimpa.
